@@ -1,1 +1,1 @@
-# gscm
+# Generalised Shared Component Model (GSCM)
