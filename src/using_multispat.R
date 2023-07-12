@@ -11,7 +11,7 @@ library(tmap)
 tmap_mode("view")
 
 # load data
-df <- readRDS("data/y_mats.rds")
+df <- readRDS("data/y_mats_unc.rds")
 global_obj <- readRDS("data/global_obj.rds")
 
 # Load map
