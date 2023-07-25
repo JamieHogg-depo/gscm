@@ -1,7 +1,8 @@
 data{
-	int M; // sample size
-	matrix[M,2] Y; // data matrix of order [N,S]
-	matrix[M,2] sd_mat;
+	int M; 					// sample size
+	int K;					// Number of features
+	matrix[M,K] Y; 			// data matrix of order [N,S]
+	matrix[M,K] sd_mat;		// standard deviations of Y
 }
 parameters{
 	//Parameters
