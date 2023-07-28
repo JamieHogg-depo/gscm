@@ -32,9 +32,10 @@ comp <- stan_model(file = "src/stan/SCM2.stan")
 d <- list(N = nrow(data),
           K = ncol(data),
           Y = data,
-          sd_mat = matrix(0.01, nrow = nrow(data),ncol = ncol(data))#,
-          #sd_mat = data_sd,
+          #sd_mat = matrix(0.01, nrow = nrow(data),ncol = ncol(data))#,
+          sd_mat = data_sd
           )
+d <- c(d, for_stan)
 
 # fit model
 m_s <- Sys.time()
@@ -47,9 +48,9 @@ fit <- sampling(object = comp,
                 cores = 2)
 (rt <- as.numeric(Sys.time() - m_s, units = "mins"))
 
-print(fit, pars = c("alpha", "lambda", "sigma_e", "sigma_z"))
+print(fit, pars = c("alpha", "lambda", "sigma_e", "sigma_z", 'rho'))
 print(fit, pars = "lambda")
-stan_trace(fit, pars = c("alpha", "lambda", "sigma_e", "sigma_z"))
+stan_trace(fit, pars = c("alpha", "lambda", "sigma_e", "sigma_z", "rho"))
 
 # get latent field
 draws <- rstan::extract(fit)
@@ -60,7 +61,8 @@ epsilon <- apply(draws$epsilon, c(2,3), median)
 library(loo)
 log_lik <- extract_log_lik(fit, merge_chains=F)
 r_eff <- relative_eff(exp(log_lik))
-loo <- loo(log_lik, r_eff = r_eff)
+loo_out <- loo(log_lik, r_eff = r_eff)
+loo_out
 
 # compare means with observed data
 mu <- as.data.frame(apply(draws$mu, c(2,3), median)) %>% 
