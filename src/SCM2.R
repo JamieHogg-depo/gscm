@@ -15,10 +15,13 @@ source("src/funs.R")
 # load global data
 global_obj <- readRDS("data/global_obj.rds")
 W <- global_obj$W[global_obj$census$ps_state == 1, global_obj$census$ps_state == 1]
+#W <- global_obj$W
 for_stan <- jf$prep4MLCAR(W)
+icar_for_stan <- jf$prep4ICAR(W)
 
 # subset census to state 1 - NSW
 census <- global_obj$census %>% filter(ps_state == 1)
+#census <- global_obj$census
 out <- readRDS("data/y_mats_unc.rds")
 data <- out$point[census$ps_area,-c(1:2)]
 data_sd <- out$sd[census$ps_area,-c(1:2)]
@@ -35,17 +38,17 @@ d <- list(N = nrow(data),
           #sd_mat = matrix(0.01, nrow = nrow(data),ncol = ncol(data))#,
           sd_mat = data_sd
           )
-d <- c(d, for_stan)
+d <- c(d, for_stan, icar_for_stan)
 
 # fit model
 m_s <- Sys.time()
 fit <- sampling(object = comp, 
-                pars = c("Z_epsilon", "Z_z"),
+                pars = c("Z_epsilon", "Z_z", "mu"),
                 include = FALSE,
                 data = d, 
-                chains = 2,
+                chains = 4,
                 iter = 6000, warmup = 3000, 
-                cores = 2)
+                cores = 4)
 (rt <- as.numeric(Sys.time() - m_s, units = "mins"))
 
 print(fit, pars = c("alpha", "lambda", "sigma_e", "sigma_z", 'rho'))
