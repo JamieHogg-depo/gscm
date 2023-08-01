@@ -19,7 +19,7 @@ data <- out$point[census$ps_area,-c(1:2)]
 
 # compile model
 unlink("src/stan/*.rds")
-comp <- stan_model(file = "src/stan/FM2.stan")
+comp <- stan_model(file = "src/stan/FM3.stan")
 
 # data list
 d <- list(N = nrow(data),
@@ -27,37 +27,27 @@ d <- list(N = nrow(data),
           Y = data,
           L = 2)
 
-# initial values
-init_fun = function() {
-  init.values<-list(Lambda_t=rep(0,24)+runif(1,-.1,.1),
-                    Lambda_d=rep(.5,D)+runif(1,-.1,.1),
-                    psi=rep(.2,P)+runif(1,-.1,.1),
-                    sigma_psi=0.15+runif(1,-.1,.1),
-                    mu_psi=0.2++runif(1,-.1,.1),
-                    sigma_lt=0.5+runif(1,-.1,.1),
-                    mu_lt=0.0+runif(1,-.1,.1))
-  return(init.values); 
-} 
-
 # fit model
 m_s <- Sys.time()
 fit <- sampling(object = comp, 
-                pars= c("L","psi","sigma_psi","mu_psi","sigma_lt","mu_lt"), 
+                #pars= c("z"),
+                #include = FALSE, 
                 seed = 42,
                 init=0,
                 data = d, 
-                chains = 4,
+                chains = 2,
                 #iter = 6000, warmup = 3000, 
-                cores = 4)
+                control = list(adapt_delta = 0.95),
+                cores = 2)
 (rt <- as.numeric(Sys.time() - m_s, units = "mins"))
 
 #print(fit)
-print(fit, pars = "Lambda")
-stan_trace(fit, pars = "Lambda")
+print(fit, pars = c("Lambda", "psi", "alpha"))
+stan_trace(fit, pars = c("Lambda", "psi", "alpha"))
 
 # get latent field
 draws <- rstan::extract(fit)
-latent <- apply(draws$fi, 2, median)
+latent <- apply(draws$z, 2, median)
 
 ## Map the latent field #### ---------------------------------------------------
 
