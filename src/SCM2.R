@@ -14,13 +14,13 @@ source("src/funs.R")
 
 # load global data
 global_obj <- readRDS("data/global_obj.rds")
-W <- global_obj$W[global_obj$census$ps_state == 1, global_obj$census$ps_state == 1]
+W <- global_obj$W[global_obj$census$ps_state == 6, global_obj$census$ps_state == 6]
 #W <- global_obj$W
 for_stan <- jf$prep4MLCAR(W)
 icar_for_stan <- jf$prep4ICAR(W)
 
 # subset census to state 1 - NSW
-census <- global_obj$census %>% filter(ps_state == 1)
+census <- global_obj$census %>% filter(ps_state == 6)
 #census <- global_obj$census
 out <- readRDS("data/y_mats_unc.rds")
 data <- out$point[census$ps_area,-c(1:2)]
@@ -43,13 +43,14 @@ d <- c(d, for_stan, icar_for_stan)
 # fit model
 m_s <- Sys.time()
 fit <- sampling(object = comp, 
-                pars = c("Z_epsilon", "Z_z", "mu"),
+                pars = c("Z_z", "mu"), #, "Z_epsilon"),
                 include = FALSE,
                 data = d, 
-                chains = 4,
-                iter = 6000, warmup = 3000, 
-                cores = 4)
+                chains = 2,
+                iter = 4000, warmup = 2000, 
+                cores = 2)
 (rt <- as.numeric(Sys.time() - m_s, units = "mins"))
+summ <- as.data.frame(summary(fit)$summary)
 
 print(fit, pars = c("alpha", "lambda", "sigma_e", "sigma_z", 'rho'))
 print(fit, pars = "lambda")
@@ -59,6 +60,10 @@ stan_trace(fit, pars = c("alpha", "lambda", "sigma_e", "sigma_z", "rho"))
 draws <- rstan::extract(fit)
 latent <- apply(draws$z, 2, median)
 epsilon <- apply(draws$epsilon, c(2,3), median)
+
+# Compare Z_epsilon
+plot(as.numeric(apply(draws$out, c(2,3), median)),
+     as.numeric(apply(draws$Z_epsilon, c(2,3), median)))
 
 # LOOCV
 library(loo)

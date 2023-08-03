@@ -1,4 +1,4 @@
-# Factor model - https://discourse.mc-stan.org/t/fitting-a-bayesian-factor-analysis-model-in-stan/17823/2
+# BayesianPCA - https://www.cs.helsinki.fi/u/sakaya/tutorial/code/pca.R
 
 ## Load packages ## ------------------------------------------------------------
 library(tidyverse)
@@ -19,18 +19,18 @@ global_obj <- readRDS("data/global_obj.rds")
 census <- global_obj$census %>% filter(ps_state == 1)
 out <- readRDS("data/y_mats_unc.rds")
 data <- out$point[census$ps_area,-c(1:2)]
-data_sd <- out$sd[census$ps_area,-c(1:2)]
-#data <- scale(data)
+#data_sd <- out$sd[census$ps_area,-c(1:2)]
+data <- scale(data)
 
 # compile model
 unlink("src/stan/*.rds")
-comp <- stan_model(file = "src/stan/FM3.stan")
+comp <- stan_model(file = "src/stan/BayesianPCA.stan")
 
 # data list
 d <- list(N = nrow(data),
           K = ncol(data),
           Y = data,
-          sd_mat = data_sd,
+          #sd_mat = data_sd,
           L = 2)
 
 # fit model
@@ -41,15 +41,16 @@ fit <- sampling(object = comp,
                 seed = 42,
                 init=0,
                 data = d, 
-                chains = 2,
+                chains = 1,
                 #iter = 6000, warmup = 3000, 
                 control = list(adapt_delta = 0.95),
-                cores = 2)
+                cores = 1)
 (rt <- as.numeric(Sys.time() - m_s, units = "mins"))
+summ <- as.data.frame(summary(fit)$summary)
 
 #print(fit)
-print(fit, pars = c("Lambda", "psi", "alpha"))
-stan_trace(fit, pars = c("Lambda", "psi", "alpha"))
+print(fit, pars = c("W", "t_tau", "t_alpha"))
+stan_trace(fit, pars = c("W", "t_tau"))
 
 # get latent field
 draws <- rstan::extract(fit)

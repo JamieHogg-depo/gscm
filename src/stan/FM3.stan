@@ -2,18 +2,22 @@ data {
   int<lower=1> N;                // number of observations
   int<lower=1> K;                // number of features
   matrix[N,K] Y;                 // data matrix of order [N,K]
+  matrix[N,K] sd_mat;		// standard deviations of Y
   int<lower=1> L;              // number of latent dimensions 
 }
 transformed data {
-  int<lower=1> M;
-  M  = L*(K-L)+ L*(L-1)/2;  // number of non-zero loadings
+	int<lower=1> M;
+	M  = L*(K-L)+ L*(L-1)/2;  // number of non-zero loadings
+	vector[N*K] Y_v = to_vector(Y);
+	vector[N*K] sd_mat_v = to_vector(sd_mat);
 }
 parameters {    
-  vector[M] Lambda_t;   		  // lower diagonal elements of Lambda
-  vector<lower=0>[L] Lambda_d;    // diagonal elements of Lambda
-  vector<lower=0>[K] psi;         // vector of variances
-  vector[K] alpha;       // vector of means
-  matrix[N,L] z;
+	vector[M] Lambda_t;   		  // lower diagonal elements of Lambda
+	vector<lower=0>[L] Lambda_d;    // diagonal elements of Lambda
+	vector<lower=0>[K] psi;         // vector of variances
+	vector[K] alpha;       // vector of means
+	matrix[N,L] z;
+	matrix[N,K] mu;
 }
 transformed parameters{
   cholesky_factor_cov[K,L] Lambda;  //lower triangular factor loadings Matrix 
@@ -28,7 +32,7 @@ transformed parameters{
     }
   }
   for (l in 1:L) {
-      Lambda[l,l] = Lambda_d[l]; // diagonal elements
+      Lambda[l,l] = 1.0; //Lambda_d[l]; // diagonal elements
     for (k in (l+1):K) {
       idx2 = idx2 + 1;
       Lambda[k,l] = Lambda_t[idx2];
@@ -45,9 +49,10 @@ model {
 // latent
 	to_vector(z) ~ std_normal();	
 //The likelihood
+	Y_v ~ normal( to_vector(mu), sd_mat_v );
 	for(n in 1:N){
 		for(k in 1:K){
-			Y[n,k] ~ normal( alpha[k] + Lambda[k,] * z[n,]', psi[k] ); 	
+			mu[n,k] ~ normal( alpha[k] + Lambda[k,] * z[n,]', psi[k] ); 	
 		}
 	}
 	// Y[j] ~ multi_normal(mu,Q);

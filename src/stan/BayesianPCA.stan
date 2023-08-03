@@ -1,17 +1,17 @@
 data{ // https://www.cs.helsinki.fi/u/sakaya/tutorial/code/pca.R
 	int<lower=0> N; // Number of samples
-	int<lower=0> D; // The original dimension
-	int<lower=0> K; // The latent dimension
-	matrix[N, D] X; // The data matrix
+	int<lower=0> K; // The original dimension
+	int<lower=0> L; // The latent dimension
+	matrix[N, K] Y; // The data matrix
 }
 parameters{
-	matrix[N, K] Z; // The latent matrix
-	matrix[D, K] W; // The weight matrix
+	matrix[N, L] Z; // The latent matrix
+	matrix[K, L] W; // The weight matrix
 	real<lower=0> tau; // Noise term 
-	vector<lower=0>[K] alpha; // ARD prior
+	vector<lower=0>[L] alpha; // ARD prior
 }
 transformed parameters{
-	vector<lower=0>[K] t_alpha;
+	vector<lower=0>[L] t_alpha;
 	real<lower=0> t_tau;
 	t_alpha = inv(sqrt(alpha));
 	t_tau = inv(sqrt(tau));
@@ -20,6 +20,7 @@ model {
 	tau ~ gamma(1,1);			
 	to_vector(Z) ~ normal(0,1);
 	alpha ~ gamma(1e-3,1e-3);				
-	for(k in 1:K) W[,k] ~ normal(0, t_alpha[k]);
-	to_vector(X) ~ normal(to_vector(Z*W'), t_tau);
+	for(l in 1:L) W[,l] ~ normal(0, t_alpha[l]);
+	to_vector(Y) ~ normal(to_vector(Z*W'), t_tau);
 }
+

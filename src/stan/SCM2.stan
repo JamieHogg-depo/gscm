@@ -85,6 +85,7 @@ parameters{
 }
 transformed parameters{
 	matrix[N, K] mu;
+	//matrix[N, K] unit_scale_residual;
 	vector[K] lambda;
 	matrix[N, K] epsilon;
 	vector[N] z = Z_z*sigma_z;
@@ -93,9 +94,10 @@ transformed parameters{
 	for(k in 1:K){
 		epsilon[,k] = Z_epsilon[,k] * sigma_e[k];
 		mu[,k] = alpha[k] + lambda[k]*z + epsilon[,k];
+		//unit_scale_residual[,k] = (Y[,k] - alpha[k] - lambda[k]*z)/sigma_e[k];
 	}
 }
-model{
+model{ // `to_vector(.)` stacks by columns
 	// Hyperpriors
 		sigma_e ~ std_normal(); 
 		sigma_z ~ std_normal();
@@ -109,24 +111,34 @@ model{
 		// Z_z ~ std_normal();
 		// Z_z ~ LCAR( rho[K+1], 1, C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N );
 		Z_z ~ ICAR( N, node1, node2);
-		// `to_vector(.)` stacks by columns
-		for(k in 1:K){
+		//for(k in 1:K){
 			// Z_epsilon[,k] ~ LCAR( rho[k], 1, C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N );
-			Z_epsilon[,k] ~ ICAR( N, node1, node2);
-		}
-		// to_vector(Z_epsilon) ~ std_normal();
+			//Z_epsilon[,k] ~ ICAR( N, node1, node2);
+		//}
+		to_vector(Z_epsilon) ~ std_normal();
+		// to_vector(unit_scale_residual) ~ std_normal();
 		
 	// Likelihood
 		Y_v ~ normal( to_vector(mu), sd_mat_v );
+		//for(k in 1:K){
+		//	Y[,k] ~ normal( alpha[k] + lambda[k]*z, sigma_e[k] );
+		//}
+		
 }
 generated quantities {
-  real log_lik[N*K];
-  {
-	vector[N*K] mu_v = to_vector(mu);
-    for (nk in 1:N*K){
-		log_lik[nk] = normal_lpdf( Y_v[nk] | mu_v[nk], sd_mat_v[nk]);
-    }
-  }
+	real log_lik[N*K];
+	//matrix[N,K] out;
+	{
+		vector[N*K] mu_v = to_vector(mu);
+		for (nk in 1:N*K){
+			log_lik[nk] = normal_lpdf( Y_v[nk] | mu_v[nk], sd_mat_v[nk]);
+		}
+	}
+	//for(k in 1:K){
+		//out[,k] = (mu[,k] - alpha[k] - lambda[k]*z)/sigma_e[k]; // EXACTLY equal to Z_epsilon
+		// with sd_mat_v = 0, then mu = Y
+		// replace mu with Y in above
+	//}
 }
 
 

@@ -1,4 +1,4 @@
-# Factor model - https://discourse.mc-stan.org/t/fitting-a-bayesian-factor-analysis-model-in-stan/17823/2
+# Factor model - https://rfarouni.github.io/assets/projects/BayesianFactorAnalysis/BayesianFactorAnalysis.html
 
 ## Load packages ## ------------------------------------------------------------
 library(tidyverse)
@@ -10,50 +10,55 @@ library(tmap)
 tmap_mode("view")
 rm(list = ls())
 
-# Number of latent factors based on P0394
-maxL <- function(k){floor(k + 1/2 - (sqrt(1+8*k)/2))}
-# for 5, we can only go up to 2
-
 # load data
 global_obj <- readRDS("data/global_obj.rds")
 census <- global_obj$census %>% filter(ps_state == 1)
 out <- readRDS("data/y_mats_unc.rds")
 data <- out$point[census$ps_area,-c(1:2)]
-data_sd <- out$sd[census$ps_area,-c(1:2)]
-#data <- scale(data)
+data <- scale(data)
 
 # compile model
 unlink("src/stan/*.rds")
-comp <- stan_model(file = "src/stan/FM3.stan")
+comp <- stan_model(file = "src/stan/FM.stan")
 
 # data list
 d <- list(N = nrow(data),
           K = ncol(data),
           Y = data,
-          sd_mat = data_sd,
           L = 2)
+L <- d$L
+K <- d$K
+
+# initial values
+init_fun = function() {
+  init.values<-list(Lambda_t=rep(0,24)+runif(1,-.1,.1),
+                    Lambda_d=rep(.5,L)+runif(1,-.1,.1),
+                    psi=rep(.1,K)+runif(1,-.1,.1),
+                    alpha = rnorm(K))
+  return(init.values)
+} 
 
 # fit model
 m_s <- Sys.time()
 fit <- sampling(object = comp, 
-                #pars= c("z"),
-                #include = FALSE, 
-                seed = 42,
-                init=0,
+                pars= c("Q"),
+                include = FALSE, 
+                #seed = 42,
+                init = init_fun,
                 data = d, 
-                chains = 2,
+                chains = 4,
                 #iter = 6000, warmup = 3000, 
                 control = list(adapt_delta = 0.95),
-                cores = 2)
+                cores = 4)
 (rt <- as.numeric(Sys.time() - m_s, units = "mins"))
 
 #print(fit)
-print(fit, pars = c("Lambda", "psi", "alpha"))
-stan_trace(fit, pars = c("Lambda", "psi", "alpha"))
+print(fit, pars = "Lambda")
+stan_trace(fit, pars = c("Lambda", "sigma_z", "alpha", "psi"))
 
 # get latent field
 draws <- rstan::extract(fit)
-latent <- apply(draws$z, 2, median)
+latent <- apply(draws$fi, 2, median)
 
 ## Map the latent field #### ---------------------------------------------------
 
