@@ -12,10 +12,11 @@ rm(list = ls())
 
 # load data
 global_obj <- readRDS("data/global_obj.rds")
-census <- global_obj$census %>% filter(ps_state == 1)
+census <- global_obj$census %>% filter(ps_state == 7)
 out <- readRDS("data/y_mats_unc.rds")
 data <- out$point[census$ps_area,-c(1:2)]
-data <- scale(data)
+data <- data[,c(5,1,2,3,4)]
+#data <- scale(data)
 
 # compile model
 unlink("src/stan/*.rds")
@@ -54,11 +55,15 @@ fit <- sampling(object = comp,
 
 #print(fit)
 print(fit, pars = "Lambda")
-stan_trace(fit, pars = c("Lambda", "sigma_z", "alpha", "psi"))
+stan_trace(fit, pars = c("Lambda", "alpha", "psi", "sigma_z"))
 
 # get latent field
 draws <- rstan::extract(fit)
-latent <- apply(draws$fi, 2, median)
+latent <- apply(draws$z, c(2,3), median)
+
+# compare latent spaces
+#plot(latent[,1], latent3[,1]); abline(a = 0, b = 1)
+#plot(latent[,2], latent2[,2]); abline(a = 0, b = 1)
 
 ## Map the latent field #### ---------------------------------------------------
 

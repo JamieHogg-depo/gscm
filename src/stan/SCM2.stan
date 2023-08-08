@@ -109,10 +109,10 @@ model{ // `to_vector(.)` stacks by columns
 		
 	// Latent variables
 		// Z_z ~ std_normal();
-		// Z_z ~ LCAR( rho[K+1], 1, C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N );
-		Z_z ~ ICAR( N, node1, node2);
+		Z_z ~ LCAR( rho[K+1], 1, C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N );
+		// Z_z ~ ICAR( N, node1, node2);
 		//for(k in 1:K){
-			// Z_epsilon[,k] ~ LCAR( rho[k], 1, C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N );
+		//	Z_epsilon[,k] ~ LCAR( rho[k], 1, C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N );
 			//Z_epsilon[,k] ~ ICAR( N, node1, node2);
 		//}
 		to_vector(Z_epsilon) ~ std_normal();
