@@ -2,7 +2,8 @@ data { //https://rfarouni.github.io/assets/projects/BayesianFactorAnalysis/Bayes
   int<lower=1> N;                // number of 
   int<lower=1> K;                // number of 
   matrix[N,K] Y;                 // data matrix of order [N,K]
-  int<lower=1> L;              	// number of latent dimensions 
+  int<lower=1> L;              	// number of latent dimensions
+  real<lower=0> psi_cut;
 }
 transformed data {
   int<lower=1> M;
@@ -12,14 +13,15 @@ transformed data {
 parameters {    
   vector[M] Lambda_t;   // lower diagonal elements of Lambda
   vector<lower=0>[L] Lambda_d;   // lower diagonal elements of Lambda
-  vector<lower=0>[K] psi;         // vector of variances
+  vector<lower=psi_cut>[K] psi;         // vector of variances
   vector[K] alpha;
-  matrix[N,L] z;
+  matrix[N,L] Z_z;
   vector<lower=0>[L] sigma_z;
 }
 transformed parameters{
   cholesky_factor_cov[K,L] Lambda;  //lower triangular factor loadings Matrix 
-  cov_matrix[K] Q;   //Covariance mat
+  matrix[N,L] z;
+  //cov_matrix[K] Q;   //Covariance mat
 {
   int idx1 = 0;
   int idx2 = 0; 
@@ -38,8 +40,11 @@ transformed parameters{
       Lambda[i,j] <- Lambda_t[idx2];
     } 
   }
-} 
-Q = Lambda * Lambda' + diag_matrix(psi); 
+}
+	for(l in 1:L){
+		z[,l] = Z_z[,l] * sigma_z[l]; 
+	} 
+//Q = Lambda * Lambda' + diag_matrix(psi); 
 }
 model {
 	// the priors 
@@ -49,13 +54,13 @@ model {
 	sigma_z ~ std_normal();
 	alpha ~ std_normal();
 	//for(l in 1:L){
-	//	z[,l] ~ normal( 0, sigma_z[l] );
+	//	Z_z[,l] ~ std_normal( );
 	//}
-	//to_vector(z) ~ std_normal();
+	to_vector(Z_z) ~ std_normal();
 	//The likelihood
 	for(n in 1:N){
 		//Y[j] ~ multi_normal( alpha, Q );
-		z[n] ~ multi_normal( zero_v, diag_matrix(sigma_z) ); 
+		//z[n] ~ multi_normal( zero_v, diag_matrix(sigma_z) ); 
 		for(k in 1:K) Y[n,k] ~ normal( alpha[k] + Lambda[k,] * z[n]', psi[k] );
 	}
 }

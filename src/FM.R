@@ -13,9 +13,10 @@ rm(list = ls())
 # load data
 global_obj <- readRDS("data/global_obj.rds")
 census <- global_obj$census %>% filter(ps_state == 7)
+#census <- global_obj$census
 out <- readRDS("data/y_mats_unc.rds")
 data <- out$point[census$ps_area,-c(1:2)]
-data <- data[,c(5,1,2,3,4)]
+#data <- data[,c(5,1,2,3,4)]
 #data <- scale(data)
 
 # compile model
@@ -26,7 +27,8 @@ comp <- stan_model(file = "src/stan/FM.stan")
 d <- list(N = nrow(data),
           K = ncol(data),
           Y = data,
-          L = 2)
+          L = 2,
+          psi_cut = 0.05)
 L <- d$L
 K <- d$K
 
@@ -42,20 +44,25 @@ init_fun = function() {
 # fit model
 m_s <- Sys.time()
 fit <- sampling(object = comp, 
-                pars= c("Q"),
+                pars= c("Q", "Lambda_t", "Lambda_d", "Z_z"),
                 include = FALSE, 
                 #seed = 42,
-                init = init_fun,
+                init = 0, #init_fun,
                 data = d, 
                 chains = 4,
-                #iter = 6000, warmup = 3000, 
+                iter = 6000, warmup = 3000, 
                 control = list(adapt_delta = 0.95),
                 cores = 4)
 (rt <- as.numeric(Sys.time() - m_s, units = "mins"))
+summ <- as.data.frame(summary(fit)$summary) %>% 
+  rownames_to_column("parameter")
+100*mean(summ$Rhat > 1.01, na.rm = T)
 
 #print(fit)
-print(fit, pars = "Lambda")
+print(fit, pars = c("Lambda", "psi"))
+matrix(summ[str_detect(summ$parameter, "Lambda\\["),]$mean, byrow = T, ncol = L)
 stan_trace(fit, pars = c("Lambda", "alpha", "psi", "sigma_z"))
+pairs(fit, pars = c("psi", "sigma_z"))
 
 # get latent field
 draws <- rstan::extract(fit)
