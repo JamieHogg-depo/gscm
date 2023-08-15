@@ -170,7 +170,8 @@ model {
 		else if(shared_latent_rho_fixed == 0)
 			target += std_normal_lpdf( Z_z[,l] ); 
 		else
-			target += LCAR_lpdf( Z_z[,l] | rho_z[l], 1, C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N ) ; 
+			target += LCAR_lpdf( Z_z[,l] | rho_z[l], 1, C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N ); 
+			target += normal_lpdf( sum(Z_z[,l]) | 0, 0.001 * N );
 	}
 	
 	// feature specific latent factors - unit scale
@@ -180,7 +181,8 @@ model {
 		else if(specific_latent_rho_fixed == 0)
 			target += std_normal_lpdf( Z_epsilon[,k] ); 
 		else
-			target += LCAR_lpdf( Z_epsilon[,k] | rho_epsilon[k], 1, C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N ) ; 
+			target += LCAR_lpdf( Z_epsilon[,k] | rho_epsilon[k], 1, C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N );
+			target += normal_lpdf( sum(Z_z[,l]) | 0, 0.001 * N );			
 	}
 	
 	// Likelihood - measurement error model

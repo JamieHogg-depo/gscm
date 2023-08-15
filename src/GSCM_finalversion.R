@@ -15,18 +15,20 @@ source("src/funs.R")
 
 # load global data
 global_obj <- readRDS("data/global_obj.rds")
-W <- global_obj$W[global_obj$census$ps_state == 6, global_obj$census$ps_state == 6]
-#W <- global_obj$W
+#W <- global_obj$W[global_obj$census$ps_state == 6, global_obj$census$ps_state == 6]
+W <- global_obj$W
 for_stan <- jf$prep4MLCAR(W)
 icar_for_stan <- jf$prep4ICAR(W)
 
 # subset census to state 1 - NSW
-census <- global_obj$census %>% filter(ps_state == 6)
-#census <- global_obj$census
+#census <- global_obj$census %>% filter(ps_state == 6)
+census <- global_obj$census
 out <- readRDS("data/y_mats_unc.rds")
-data <- out$point[census$ps_area,-c(1:2)]
+data <- out$point[,-c(1:2)]
+#data <- out$point[census$ps_area,-c(1:2)]
 #data <- scale(data, scale = FALSE)
-data_sd <- out$sd[census$ps_area,-c(1:2)]
+#data_sd <- out$sd[census$ps_area,-c(1:2)]
+data_sd <- out$sd[,-c(1:2)]
 #data <- out$point[,c(6:7)]
 
 # compile model

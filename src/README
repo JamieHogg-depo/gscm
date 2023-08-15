@@ -45,3 +45,16 @@
 			- found 2 modes - only one chain did this
 			- other chains converged nicely
 			
+	Using all areas and L = 2
+		took 62 mins
+		shared_latent_rho_fixed: 2, specific_latent_rho_fixed: 0: (using 4 chains)
+			- 14 observations have very bad pareto
+			- alpha has not converged - possibly because rho is 0.99 for both latent factors
+			- when alpha has not converged then the z's also don't
+			- 28% of saved parameters have Rhat  > 1.01
+
+# 0816
+	added soft constraint on LCAR
+	activity has the strongest PCA loading with PC1
+	alcohol has the stongest PCA loading with PC2
+	Order should be activityleiswkpl, alcohol, etc
