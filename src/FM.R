@@ -28,7 +28,7 @@ d <- list(N = nrow(data),
           K = ncol(data),
           Y = data,
           L = 2,
-          psi_cut = 0.05)
+          psi_cut = 0.0)
 L <- d$L
 K <- d$K
 

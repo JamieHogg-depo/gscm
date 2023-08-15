@@ -50,7 +50,8 @@ model {
 	// the priors 
 	Lambda_d ~ std_normal();
 	Lambda_t ~ std_normal();
-	psi ~ std_normal();
+	//psi ~ std_normal();
+	psi ~ gamma(2,1); // 0.0047 of the density is below 0.1
 	sigma_z ~ std_normal();
 	alpha ~ std_normal();
 	//for(l in 1:L){
