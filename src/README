@@ -1,0 +1,47 @@
+## README
+
+# 0815
+	GSCM_finalversion.stan - copied from FM.stan file
+	Using ps_state = 6 (97 areas) and L = 2 (using 2 chains)
+
+		shared_latent_rho_fixed: 0, specific_latent_rho_fixed: 0: GOOD CONVERGENCE 
+		
+		shared_latent_rho_fixed: 1, specific_latent_rho_fixed: 0: GOOD CONVERGENCE
+		
+		shared_latent_rho_fixed: 1, specific_latent_rho_fixed: 1: Poor efficiency but okay convergence 
+			- some max treedepth problems
+			- all saved parameters have Rhat < 1.01
+		
+		shared_latent_rho_fixed: 2, specific_latent_rho_fixed: 0: Poor efficiency but okay convergence 
+			- 0.4% of saved parameters have Rhat > 1.01
+			- The alpha parameters exhibit poor convergence
+			- this is most likely to do with rho being so close to 1
+			- GOOD LOO
+			
+		shared_latent_rho_fixed: 2, specific_latent_rho_fixed: 2: Poor efficiency but okay convergence
+			- 10% of saved parameters have Rhat > 1.01
+			- The alpha and rho parameters exhibit poor convergence
+			- the latent factors must soak up most of the spatial patterns making 
+			the feature-specific terms IID
+			- 4 divergent transitions
+			- GOOD LOO
+			
+		shared_latent_rho_fixed: 2, specific_latent_rho_fixed: 0: 
+			- using 4 chains
+			- using init = 0
+			- 12.9% of saved parameters have Rhat > 1.01
+			- The alpha parameters exhibit poor convergence
+			- this is most likely to do with rho being so close to 1
+			- GOOD LOO
+		
+	Using ps_state = 6 (97 areas) and L = 1
+		shared_latent_rho_fixed: 2, specific_latent_rho_fixed: 2: Poor efficiency but okay convergence
+				- 0.16% of saved parameters have Rhat > 1.01
+				- The alpha and rho parameters exhibit poor convergence
+				- GOOD LOO
+				
+		shared_latent_rho_fixed: 2, specific_latent_rho_fixed: 0: (using 4 chains)
+			- terrible convergence
+			- found 2 modes - only one chain did this
+			- other chains converged nicely
+			
