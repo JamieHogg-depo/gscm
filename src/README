@@ -55,6 +55,9 @@
 
 # 0816
 	added soft constraint on LCAR
+		- this fixes the issues with alpha
 	activity has the strongest PCA loading with PC1
 	alcohol has the stongest PCA loading with PC2
 	Order should be activityleiswkpl, alcohol, etc
+	11 observations have very bad LOO values
+	Takes 90 minutes to fit
