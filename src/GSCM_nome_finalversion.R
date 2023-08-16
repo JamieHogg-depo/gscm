@@ -26,6 +26,7 @@ census <- global_obj$census %>% filter(ps_state == 6)
 out <- readRDS("data/y_mats_unc.rds")
 #data <- out$point[,-c(1:2)]
 data_raw <- out$point[census$ps_area,-c(1:2)]
+#data <- scale(data_raw)
 data <- data_raw
 #data <- jf$scaleMarginal(data_raw)
 
@@ -39,7 +40,7 @@ d <- list(N = nrow(data),
           Y = data,
           L = 2,
           shared_latent_rho_fixed = 2,
-          specific_latent_rho_fixed = 0
+          specific_latent_rho_fixed = 2
           )
 d <- c(d, for_stan, icar_for_stan)
 
@@ -52,7 +53,7 @@ fit <- sampling(object = comp,
                 init = 0, 
                 chains = 4,
                 iter = 4000, warmup = 2000, 
-                cores = 1)
+                cores = 4)
 (rt <- as.numeric(Sys.time() - m_s, units = "mins"))
 # Summarise draws
 summ <- as.data.frame(summary(fit)$summary) %>% 
@@ -62,11 +63,11 @@ Lambda_point <- matrix(summ[str_detect(summ$parameter, "Lambda\\["),]$mean, byro
 
 print(fit, pars = c("alpha", "Lambda_ld", "sigma", "psi", 'rho_z'))
 print(fit, pars = "Lambda")
-stan_trace(fit, pars = c("alpha", "Lambda_ld", "sigma", "psi", 'rho_z'))
+stan_trace(fit, pars = c("alpha", "Lambda_ld", "sigma", "psi", 'rho_z', "sigma_mar", "rho_epsilon"))
 
 # get latent field
 draws <- rstan::extract(fit)
-latent <- apply(draws$z, 2, median)
+latent <- apply(draws$z, c(2,3), median)
 
 # LOOCV
 log_lik <- extract_log_lik(fit, merge_chains=F)

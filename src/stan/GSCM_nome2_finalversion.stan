@@ -96,6 +96,7 @@ M <- L*(K-L)+ L*(L-1)/2;
 parameters {    
 	// mean vector
 	vector[K] alpha;
+	real<lower=0> sigma_mar;
 	
 	// feature-specific
 	matrix[N,K] Z_epsilon;						// standard normal latent factors
@@ -155,6 +156,7 @@ model {
 	// variance priors
 	sigma ~ gamma(2,1); // 0.0047 of the density is below 0.1
 	psi ~ gamma(2,1); // 0.0047 of the density is below 0.1
+	sigma_mar ~ gamma(2,1);
 	
 	// spatial autocorrelation priors
 	rho_z ~ uniform( 0,1 ); 
@@ -185,13 +187,13 @@ model {
 	}
 	
 	// Likelihood - measurement error model
-	Y_v ~ normal( to_vector(mu), 1 );
+	Y_v ~ normal( to_vector(mu), 0.01 ); //sigma_mar );
 }
 generated quantities {
 	real log_lik[N*K];
 	{
 		for (nk in 1:N*K){
-			log_lik[nk] = normal_lpdf( Y_v[nk] | to_vector(mu)[nk], 1);
+			log_lik[nk] = normal_lpdf( Y_v[nk] | to_vector(mu)[nk], 0.01 ); //sigma_mar );
 		}
 	}
 }

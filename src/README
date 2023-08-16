@@ -79,3 +79,9 @@
 	All the variance has been soaked up by the fixed std of 1. 
 	Took 18 mins (not in parallel)
 	Most of the hyperpriors are just sampling from the priors
+	
+	Same as above but using a fixed std of 0.01
+		- with LCAR for all parameters we geet good sampling!
+		- no data scaling required
+		- Only 5 transitions that exceeded the max treedepth
+		- 16% have very bad pareto K values
