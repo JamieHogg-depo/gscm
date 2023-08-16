@@ -53,7 +53,8 @@
 			- when alpha has not converged then the z's also don't
 			- 28% of saved parameters have Rhat  > 1.01
 
-# 0816
+# 0816 - entirety of Australia
+	GSCM_finalversion.stan
 	added soft constraint on LCAR
 		- this fixes the issues with alpha
 	activity has the strongest PCA loading with PC1
@@ -61,3 +62,20 @@
 	Order should be activityleiswkpl, alcohol, etc
 	11 observations have very bad LOO values
 	Takes 90 minutes to fit
+	
+# 0816
+	GSCM_nome_finalversion.stan - copied from GSCM_finalversion.stan file
+	
+	Use gamma(2,1) priors for both std terms
+	drop feature-specific terms - assume normal for each feature
+		- terrible convergence
+		- found two modes!
+		
+# 0816
+	GSCM_nome2_finalversion.stan - copied from GSCM_finalversion.stan file
+	By marginally scaling the matrix to have a std of 1 we fix 1 in the ME model
+	This way we can use the non-mean centered parameterisation
+	This has made the model unidentifiable as Lambda is just drawing from the priors
+	All the variance has been soaked up by the fixed std of 1. 
+	Took 18 mins (not in parallel)
+	Most of the hyperpriors are just sampling from the priors

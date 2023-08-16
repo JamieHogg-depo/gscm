@@ -73,3 +73,16 @@ jf$prep4MLCAR <- function(W){
            offD_id_C_w = offD_id_C_w)
     )
 }
+
+## -----------------------------------------------------------------------------
+jf$scaleMarginal <- function(mat){
+  # get column means
+  cMeans <- apply(mat, 2, mean)
+  col_n <- colnames(mat)
+  mat_sc <- scale(as.numeric(as.matrix(mat)))
+  # create new matrix
+  out <- as.data.frame(matrix(mat_sc,nrow = nrow(mat),ncol = ncol(mat)))
+  names(out) <- col_n
+  # return dataframe
+  return(out)
+}
