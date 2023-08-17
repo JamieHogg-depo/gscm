@@ -10,26 +10,39 @@ library(tmap)
 library(Matrix)
 tmap_mode("view")
 library(loo)
+library(bayesplot)
+library(patchwork)
 rm(list = ls())
 source("src/funs.R")
 
+foo <- function(x)cut_number(x, n = 100, labels = FALSE)
+
 # load global data
 global_obj <- readRDS("data/global_obj.rds")
-#W <- global_obj$W[global_obj$census$ps_state == 6, global_obj$census$ps_state == 6]
-W <- global_obj$W
+W <- global_obj$W[global_obj$census$ps_state == 6, global_obj$census$ps_state == 6]
+#W <- global_obj$W
 for_stan <- jf$prep4MLCAR(W)
 icar_for_stan <- jf$prep4ICAR(W)
 
 # subset census to state 1 - NSW
-#census <- global_obj$census %>% filter(ps_state == 6)
-census <- global_obj$census
+census <- global_obj$census %>% filter(ps_state == 6)
+#census <- global_obj$census
 out <- readRDS("data/y_mats_unc.rds")
-data <- out$point[,-c(1:2)]
-#data <- out$point[census$ps_area,-c(1:2)]
+#data <- out$point[,-c(1:2)]
+data <- out$point[census$ps_area,-c(1:2)]
 #data <- scale(data, scale = FALSE)
-#data_sd <- out$sd[census$ps_area,-c(1:2)]
-data_sd <- out$sd[,-c(1:2)]
+data_sd <- out$sd[census$ps_area,-c(1:2)]
+#data_sd <- out$sd[,-c(1:2)]
 #data <- out$point[,c(6:7)]
+
+# Load map
+# Load map
+map_sa2 <- st_read("C:/r_proj/ACAriskfactors/data/2016_SA2_Shape_min/2016_SA2_Shape_min.shp") %>%
+  mutate(SA2 = as.numeric(SA2_MAIN16)) %>%
+  filter(!str_detect(SA2_NAME, "Island")) %>%
+  filter(STATE_NAME != "Other Territories") %>%
+  right_join(.,global_obj$area_concor, by = "SA2") %>%
+  right_join(.,census, by = "ps_area")
 
 # compile model
 unlink("src/stan/*.rds")
@@ -54,6 +67,7 @@ fit <- sampling(object = comp,
                 data = d, 
                 init = 0, 
                 chains = 4,
+                control = list(adapt_delta = 0.95),
                 iter = 4000, warmup = 2000, 
                 cores = 4)
 (rt <- as.numeric(Sys.time() - m_s, units = "mins"))
@@ -63,25 +77,82 @@ summ <- as.data.frame(summary(fit)$summary) %>%
 100*mean(summ$Rhat > 1.01, na.rm = T)
 Lambda_point <- matrix(summ[str_detect(summ$parameter, "Lambda\\["),]$mean, byrow = T, ncol = d$L)
 
-print(fit, pars = c("alpha", "Lambda_ld", "sigma", "psi", 'rho_z', "rho_epsilon"))
+print(fit, pars = c("alpha", "Lambda_ld", "sigma", "psi", 'rho', "kappa"))
 print(fit, pars = "Lambda")
-stan_trace(fit, pars = c("alpha", "Lambda_ld", "sigma", "psi", 'rho_z', "rho_epsilon"))
+stan_trace(fit, pars = c("alpha", "Lambda_ld", "sigma", "psi", 'rho', "kappa"))
 
 # get latent field
 draws <- rstan::extract(fit)
-latent <- apply(draws$z, 2, median)
+latent <- apply(draws$z, c(2,3), median)
 
 # LOOCV
 log_lik <- extract_log_lik(fit, merge_chains=F)
 r_eff <- relative_eff(exp(log_lik))
 loo_out <- loo(log_lik, r_eff = r_eff)
 loo_out
+# ELPD - higher is better
+# L = 2, LCAR for both: 166.0 (11.4)
+# L = 2, LCAR for specific only: 149.3 (11.4)
+# L = 2, LCAR for shared only: 166.5 (11.3) - best convergence
+# L = 2, SDNORM for both: 134.4 (13.0)
+# L = 1, SDNORM for both: 132.6 (13.3)
+
+## PPC
+yrep <- draws$Y_rep[,,1]
+mean_y <- function(x) mean(x, na.rm = T)
+var_y <- function(x) var(x, na.rm = T)
+(ppc_stat(data$activityleiswkpl, yrep, stat = "mean_y") + labs(title = "Mean"))/
+(ppc_stat(data$activityleiswkpl, yrep, stat = "var_y") + labs(title = "Variance"))
+
+## Correlation
+cor_rep <- t(apply(draws$Y_rep, 1, cor))
 
 ## Plot #### -------------------------------------------------------------------
 
 ## Compare latent to raw
-cbind(latent = latent, data) %>% 
-  plot(.)
+data_wl <- cbind(latent = latent, data)
+data_pc <- apply(data_wl, 2, FUN = function(x)cut_number(x, n = 100, labels = FALSE))
+data_pc2 <- apply(data_wl, 2, FUN = function(x)cut_number(x, n = 10, labels = FALSE))
+
+## Map the factors - values
+data_wl %>% 
+  as.data.frame() %>% 
+  dplyr::select(contains("latent")) %>% 
+  mutate(ps_area = census$ps_area) %>% 
+  pivot_longer(-ps_area) %>% 
+  left_join(.,map_sa2) %>% 
+  ggplot(aes(fill = value, geometry = geometry))+
+  geom_sf()+
+  theme_void()+
+  scale_fill_viridis_c()+
+  facet_wrap(.~name)
+
+## Uncertainty of risk factors (features)
+data_sd %>% 
+  mutate(ps_area = census$ps_area) %>% 
+  pivot_longer(-ps_area) %>% 
+  left_join(.,map_sa2) %>% 
+  ggplot(aes(fill = value, geometry = geometry))+
+  geom_sf()+
+  theme_void()+
+  scale_fill_viridis_c()+
+  facet_wrap(.~name)
+
+## Map the factors - percentiles
+data_pc %>% 
+  as.data.frame() %>% 
+  #dplyr::select(contains("latent")) %>% 
+  mutate(ps_area = census$ps_area) %>% 
+  pivot_longer(-ps_area) %>% 
+  left_join(.,map_sa2) %>% 
+  ggplot(aes(fill = value, geometry = geometry))+
+  geom_sf()+
+  theme_void()+
+  scale_fill_viridis_c()+
+  facet_wrap(.~name)+
+  labs(fill = "Percentiles")
+
+## DEPREC ## -------------------------------------------------------------------
 
 ## Compare raw values to latent values
 data.frame(latent = latent, 

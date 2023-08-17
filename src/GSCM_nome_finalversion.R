@@ -61,9 +61,9 @@ summ <- as.data.frame(summary(fit)$summary) %>%
 100*mean(summ$Rhat > 1.01, na.rm = T)
 Lambda_point <- matrix(summ[str_detect(summ$parameter, "Lambda\\["),]$mean, byrow = T, ncol = d$L)
 
-print(fit, pars = c("alpha", "Lambda_ld", "sigma", "psi", 'rho_z'))
+print(fit, pars = c("alpha", "Lambda_ld", "sigma", "psi", 'rho'))
 print(fit, pars = "Lambda")
-stan_trace(fit, pars = c("alpha", "Lambda_ld", "sigma", "psi", 'rho_z', "sigma_mar", "rho_epsilon"))
+stan_trace(fit, pars = c("alpha", "Lambda_ld", "sigma", "psi", 'rho', "sigma_mar", "kappa"))
 
 # get latent field
 draws <- rstan::extract(fit)

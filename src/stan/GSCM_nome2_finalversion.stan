@@ -62,46 +62,45 @@ real ICAR_lpdf(vector x, int N, int[] node1, int[] node2) {
 }
 
 data {
-// data
-int<lower=1> N;                	// number of observations
-int<lower=1> K;                	// number of features
-matrix[N,K] Y;                 	// data matrix of order [N,K]
+	// data
+	int<lower=1> N;                	// number of observations
+	int<lower=1> K;                	// number of features
+	matrix[N,K] Y;                 	// data matrix of order [N,K]
 
-// model selection
-int<lower=1> L;              	// number of latent dimensions
-int shared_latent_rho_fixed;	// rho = 0: stand norm, rho = 1: ICAR
-int specific_latent_rho_fixed;	// rho = 0: stand norm, rho = 1: ICAR
+	// model selection
+	int<lower=1> L;              	// number of latent dimensions
+	int shared_latent_rho_fixed;	// rho = 0: stand norm, rho = 1: ICAR
+	int specific_latent_rho_fixed;	// rho = 0: stand norm, rho = 1: ICAR
 
-// Spatial components for Leroux prior
-vector[N] C_eigenvalues;
-int nC_w;
-vector[nC_w] C_w; 
-int C_v[nC_w]; 
-int C_u[N+1]; 
-int offD_id_C_w[nC_w - N];		// indexes for off diagonal terms
-int D_id_C_w[N]; 				// indexes for diagonal terms - length M
+	// Spatial components for Leroux prior
+	vector[N] C_eigenvalues;
+	int nC_w;
+	vector[nC_w] C_w; 
+	int C_v[nC_w]; 
+	int C_u[N+1]; 
+	int offD_id_C_w[nC_w - N];		// indexes for off diagonal terms
+	int D_id_C_w[N]; 				// indexes for diagonal terms - length M
 
-// Spatial components for ICAR prior
-int<lower=0> N_edges;
-int<lower=1, upper=N> node1[N_edges]; 
-int<lower=1, upper=N> node2[N_edges];
+	// Spatial components for ICAR prior
+	int<lower=0> N_edges;
+	int<lower=1, upper=N> node1[N_edges]; 
+	int<lower=1, upper=N> node2[N_edges];
 }
 transformed data {
-// vectorised versions of input data
-vector[N*K] Y_v = to_vector(Y);
-// number of non-zero entries
-int<lower=1> M;       
-M <- L*(K-L)+ L*(L-1)/2;   
+	// vectorised versions of input data
+	vector[N*K] Y_v = to_vector(Y);
+	// number of lower diagonal entries
+	int<lower=1> M;       
+	M <- L*(K-L)+ L*(L-1)/2;   
 }
 parameters {    
 	// mean vector
 	vector[K] alpha;
-	real<lower=0> sigma_mar;
 	
 	// feature-specific
 	matrix[N,K] Z_epsilon;						// standard normal latent factors
 	vector<lower=0>[K] sigma; 					// vector of std
-	vector<lower=0,upper=0.99>[K] rho_epsilon;	// SA parameter for feature-specific
+	vector<lower=0,upper=0.99>[K] kappa;	// SA parameter for feature-specific
 	
 	// Loading matrix
 	vector[M] Lambda_ld;   						// lower diagonal elements of Lambda
@@ -109,7 +108,7 @@ parameters {
 	// shared
 	matrix[N,L] Z_z;							// standard normal latent factors
 	vector<lower=0>[L] psi;						//  vector of std
-	vector<lower=0,upper=0.99>[L] rho_z; 		// SA parameter for shared
+	vector<lower=0,upper=0.99>[L] rho; 		// SA parameter for shared
 }
 transformed parameters{
 	cholesky_factor_cov[K,L] Lambda;  	// factor loadings matrix 
@@ -156,11 +155,10 @@ model {
 	// variance priors
 	sigma ~ gamma(2,1); // 0.0047 of the density is below 0.1
 	psi ~ gamma(2,1); // 0.0047 of the density is below 0.1
-	sigma_mar ~ gamma(2,1);
 	
 	// spatial autocorrelation priors
-	rho_z ~ uniform( 0,1 ); 
-	rho_epsilon ~ uniform( 0,1 );
+	rho ~ uniform( 0,1 ); 
+	kappa ~ uniform( 0,1 );
 	
 	// shared latent factors - unit scale
 	for(l in 1:L){
@@ -169,7 +167,7 @@ model {
 		else if(shared_latent_rho_fixed == 0)
 			target += std_normal_lpdf( Z_z[,l] ); 
 		else{
-			target += LCAR_lpdf( Z_z[,l] | rho_z[l], 1, C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N ); 
+			target += LCAR_lpdf( Z_z[,l] | rho[l], 1, C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N ); 
 			target += normal_lpdf( sum(Z_z[,l]) | 0, 0.001 * N );
 		}
 	}
@@ -181,19 +179,20 @@ model {
 		else if(specific_latent_rho_fixed == 0)
 			target += std_normal_lpdf( Z_epsilon[,k] ); 
 		else{
-			target += LCAR_lpdf( Z_epsilon[,k] | rho_epsilon[k], 1, C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N );
+			target += LCAR_lpdf( Z_epsilon[,k] | kappa[k], 1, C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N );
 			target += normal_lpdf( sum(Z_epsilon[,k]) | 0, 0.001 * N );
 		}
 	}
 	
 	// Likelihood - measurement error model
-	Y_v ~ normal( to_vector(mu), 0.01 ); //sigma_mar );
+	Y_v ~ normal( to_vector(mu), 0.01 );
 }
 generated quantities {
 	real log_lik[N*K];
+	matrix[N,K] Y_rep = to_matrix( normal_rng( to_vector(mu), 0.01 ), N, K );
 	{
 		for (nk in 1:N*K){
-			log_lik[nk] = normal_lpdf( Y_v[nk] | to_vector(mu)[nk], 0.01 ); //sigma_mar );
+			log_lik[nk] = normal_lpdf( Y_v[nk] | to_vector(mu)[nk], 0.01 );
 		}
 	}
 }
