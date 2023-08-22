@@ -49,13 +49,22 @@ unlink("src/stan/*.rds")
 comp <- stan_model(file = "src/stan/GSCM_finalversion.stan")
 
 # data list
-d <- list(N = nrow(data),
+d <- list(# data
+          N = nrow(data),
           K = ncol(data),
-          Y = data,
+          #Y = data,
+          Y_v = as.numeric(as.matrix(data)),
+          Y_sd_v = as.numeric(as.matrix(data_sd)),
+          #Y_sd = data_sd,
+          # model specification
           L = 2,
           shared_latent_rho_fixed = 2,
           specific_latent_rho_fixed = 0,
-          Y_sd = data_sd
+          gamma_var_prior = 1,
+          me0_std = 0.01,
+          me = 1,
+          gamma_a = 2, 
+          gamma_b = 1
           )
 d <- c(d, for_stan, icar_for_stan)
 
