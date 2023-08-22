@@ -63,38 +63,39 @@ real ICAR_lpdf(vector x, int N, int[] node1, int[] node2) {
 
 data {
 // data
-int<lower=1> N;                	// number of observations
-int<lower=1> K;                	// number of features
-matrix[N,K] Y;                 	// data matrix of order [N,K]
-matrix[N,K] Y_sd;				// standard deviations of Y
+	int<lower=1> N;                	// number of observations
+	int<lower=1> K;                	// number of features
+	vector[N*K] Y_v;				// vectorised data matrix of order [N,K] 
+	vector[N*K] Y_sd_v;				// vectorised standard deviations of Y
 
-// model selection
-int<lower=1> L;              	// number of latent dimensions
-int shared_latent_rho_fixed;	// rho = 0: stand norm, rho = 1: ICAR
-int specific_latent_rho_fixed;	// rho = 0: stand norm, rho = 1: ICAR
-
+// model specification
+	int<lower=1> L;              	// number of latent dimensions
+	int shared_latent_rho_fixed;	// rho = 0: stand norm, rho = 1: ICAR
+	int specific_latent_rho_fixed;	// rho = 0: stand norm, rho = 1: ICAR
+	real<lower=0> me0_std; 			// standard deviation of likelihood when me = 0
+	int me;							// me = 1: including Y_sd, me = 0: use me0_std
+	int gamma_var_prior; 			// 1: use gamma priors, 0: normal prior
+	real<lower=0> gamma_a;			// a parameter for gamma priors on std
+	real<lower=0> gamma_b;			// b parameter for gamma priors on std
 
 // Spatial components for Leroux prior
-vector[N] C_eigenvalues;
-int nC_w;
-vector[nC_w] C_w; 
-int C_v[nC_w]; 
-int C_u[N+1]; 
-int offD_id_C_w[nC_w - N];		// indexes for off diagonal terms
-int D_id_C_w[N]; 				// indexes for diagonal terms - length M
+	vector[N] C_eigenvalues;
+	int nC_w;
+	vector[nC_w] C_w; 
+	int C_v[nC_w]; 
+	int C_u[N+1]; 
+	int offD_id_C_w[nC_w - N];		// indexes for off diagonal terms
+	int D_id_C_w[N]; 				// indexes for diagonal terms - length M
 
 // Spatial components for ICAR prior
-int<lower=0> N_edges;
-int<lower=1, upper=N> node1[N_edges]; 
-int<lower=1, upper=N> node2[N_edges];
+	int<lower=0> N_edges;
+	int<lower=1, upper=N> node1[N_edges]; 
+	int<lower=1, upper=N> node2[N_edges];
 }
 transformed data {
-// vectorised versions of input data
-vector[N*K] Y_v = to_vector(Y);
-vector[N*K] Y_sd_v = to_vector(Y_sd);
 // number of non-zero entries
-int<lower=1> M;       
-M <- L*(K-L)+ L*(L-1)/2;   
+	int<lower=1> M;       
+	M <- L*(K-L)+ L*(L-1)/2;   
 }
 parameters {    
 	// mean vector
@@ -156,8 +157,14 @@ model {
 	alpha ~ std_normal();
 	
 	// variance priors
-	sigma ~ gamma(2,1); // 0.0047 of the density is below 0.1
-	psi ~ gamma(2,1);	// 0.0047 of the density is below 0.1
+	if(gamma_var_prior == 1){
+		sigma ~ gamma( gamma_a, gamma_b ); // gamma( 2, 1 ) -> 0.0047 of the density is below 0.1
+		psi ~ gamma( gamma_a, gamma_b );
+	}
+	if(gamma_var_prior == 0){
+		sigma ~ std_normal();
+		psi ~ std_normal();
+	}
 	
 	// spatial autocorrelation priors
 	rho ~ uniform( 0,1 ); 
@@ -188,14 +195,25 @@ model {
 	}
 	
 	// Likelihood - measurement error model
-	Y_v ~ normal( to_vector(mu), Y_sd_v );
+	if(me == 1){
+		Y_v ~ normal( to_vector(mu), Y_sd_v );
+	}
+	if(me == 0){
+		Y_v ~ normal( to_vector(mu), me0_std );
+	}
 }
 generated quantities {
 	real log_lik[N*K];
-	matrix[N,K] Y_rep = to_matrix( normal_rng( to_vector(mu), Y_sd_v ), N, K );
+	if(me == 1){
+		matrix[N,K] Y_rep = to_matrix( normal_rng( to_vector(mu), Y_sd_v ), N, K );
+	}
+	if(me == 0){ 
+		matrix[N,K] Y_rep = to_matrix( normal_rng( to_vector(mu), me0_std ), N, K );
+	}
 	{
 		for (nk in 1:N*K){
-			log_lik[nk] = normal_lpdf( Y_v[nk] | to_vector(mu)[nk], Y_sd_v[nk]);
+			if(me == 1) log_lik[nk] = normal_lpdf( Y_v[nk] | to_vector(mu)[nk], Y_sd_v[nk] );
+			if(me == 0) log_lik[nk] = normal_lpdf( Y_v[nk] | to_vector(mu)[nk], me0_std );
 		}
 	}
 }
