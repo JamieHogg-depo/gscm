@@ -95,7 +95,7 @@ data {
 transformed data {
 // number of non-zero entries
 	int<lower=1> M;       
-	M <- L*(K-L)+ L*(L-1)/2;   
+	M = L*(K-L)+ L*(L-1)/2;   
 }
 parameters {    
 	// mean vector
@@ -123,18 +123,18 @@ transformed parameters{
 	int idx1 = 0;
 	int idx2 = 0; 
 	real zero; 
-	zero <- 0;
+	zero = 0;
 	for(i in 1:K){
 		for(j in (i+1):L){
-		  idx1 <- idx1 + 1;
-		  Lambda[i,j] <- zero; 			// constrain the upper triangular elements to zero 
+		  idx1 = idx1 + 1;
+		  Lambda[i,j] = zero; 			// constrain the upper triangular elements to zero 
 		}
 	}
 	for (j in 1:L) {
-		Lambda[j,j] <- 1.0; 			// constrain the diagonal elements to zero 
+		Lambda[j,j] = 1.0; 			// constrain the diagonal elements to zero 
 		for (i in (j+1):K) {
-		  idx2 <- idx2 + 1;
-		  Lambda[i,j] <- Lambda_ld[idx2];
+		  idx2 = idx2 + 1;
+		  Lambda[i,j] = Lambda_ld[idx2];
 		} 
 	}
 	}
