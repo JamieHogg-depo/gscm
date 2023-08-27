@@ -86,3 +86,149 @@ jf$scaleMarginal <- function(mat){
   # return dataframe
   return(out)
 }
+
+## -----------------------------------------------------------------------------
+#' @import spdep and igraph
+#' @param sf_data sf data with geometry and 5-digit sa2 codes
+#' @param sa2_name character vector specifying the variable with 5digit sa2 codes. Default is "Sa2_5dig16". 
+#' @param .forsa3 logical (defaults to FALSE) if fixing sa3 map
+#' @return list with nb list, binary weight matrix and group membership list
+jf$getConnectedNB <- function(sf_data, 
+							sa2_name = "Sa2_5dig16", 
+							.forsa3 = FALSE){
+
+require(spdep)
+require(igraph)
+
+# create joining list
+joining_list <- list(to_join = c(21088, 21091, 31527,
+                                 31363, 31402, 31466, 
+                                 31483, 41103, 41145, 61093, 
+                                 71060, 71062, 61099),
+                     join2 = list(21308, 21379, 31013, 31362,
+                                  31401, 31483, c(31469,31466),
+                                  41100, 41128, c(61094, 21476),
+                                  71021, 71063, c(61100, 21092)))
+
+if(.forsa3){
+	joining_list <- list(to_join = c(60403, 60203),
+						 join2 = c(20503, 21703))
+}
+
+# get temporary nb object
+nb_original<- poly2nb(sf_data)
+nb_temp <- nb_original
+
+# get sf_data ids which we wish to mutate
+id_to_join <- which(unlist(sf_data[,sa2_name] %>% st_drop_geometry()) %in% as.character(joining_list$to_join))
+
+# if none to change then proceed with mutation of nb list
+if(!is_empty(id_to_join)){
+  for(i in 1:length(id_to_join)){
+    # find index join2
+    id_join2 <- which(unlist(sf_data[,sa2_name] %>% st_drop_geometry()) %in% as.character(unlist(joining_list$join2[i])))
+    # update singles
+    nb_temp[[id_to_join[i]]] <- as.integer(c(nb_temp[[id_to_join[i]]], id_join2))
+    if(!is_empty(-which(nb_temp[[id_to_join[i]]] == 0))){
+      # remove zeros
+      nb_temp[[id_to_join[i]]] <- nb_temp[[id_to_join[i]]][-which(nb_temp[[id_to_join[i]]] == 0)]
+    }
+  } 
+}
+
+# ensure nb object is symmetric
+nb_out <- make.sym.nb(nb_temp)
+
+# check connectedness
+W <- nb2mat(nb_out, style = "B", zero.policy = TRUE)
+gg <- graph.adjacency(W)
+clu <- components(gg)
+cc <- igraph::groups(clu)
+message("There are ", length(cc), " unique groups of neighbours!")
+
+# return the nb object
+return(list(nb = nb_out, 
+            W = W,
+            group_membership = cc))
+
+}
+
+## -----------------------------------------------------------------------------
+#' @import spdep and igraph
+#' @param sf_data sf data with geometry and 5-digit sa2 codes
+#' @param sa2_name character vector specifying the variable with 5digit sa2 codes. Default is "Sa2_5dig16". 
+#' @param .forsa3 logical (defaults to FALSE) if fixing sa3 map
+#' @return list with nb list, binary weight matrix and group membership list
+jf$getConnectedNB2 <- function(sf_data, 
+                            sa2_name = "Sa2_5dig16", 
+                            .forsa3 = FALSE){
+  
+  require(spdep)
+  require(igraph)
+  
+  # create joining list
+  joining_list <- list(to_join = c(21088, 21091, 31527,
+                                   31363, 31402, 31466, 
+                                   31483, 41145, 61093, 
+                                   71060, 71062, 61099),
+                       join2 = list(21308, 21379, 31013, 
+                                    31362, 31401, 31483, 
+                                    c(31469,31466), 41128, c(61094, 21476),
+                                    71021, 71063, c(61100, 21092)))
+  
+  if(.forsa3){
+    joining_list <- list(to_join = c(60403, 60203),
+                         join2 = c(20503, 21703))
+  }
+  
+  
+  # get temporary nb object
+  nb_original<- poly2nb(sf_data)
+  nb_temp <- nb_original
+  
+  # get correct ordering from which
+  jwhich <- function(full, sub){
+    out <- as.character(NA)
+    for(i in 1:length(sub)){
+      temp <- unname(unlist(which(full == as.character(sub[i]))))
+      out[i] <- ifelse(length(temp) == 0, NA, temp)
+    }
+    return(out)
+  }
+  
+  # get sf_data ids which we wish to mutate
+  sa2_names_vec <- unlist(sf_data[,sa2_name] %>% st_drop_geometry())
+  id_to_join <- as.integer(jwhich(sa2_names_vec, joining_list$to_join))
+  #id_to_join <- which(sa2_names_vec %in% as.character(joining_list$to_join))
+  
+  # if none to change then proceed with mutation of nb list
+  if(!is_empty(id_to_join)){
+    for(i in 1:length(id_to_join)){
+      # find index join2
+      id_join2 <- which(sa2_names_vec %in% as.character(unlist(joining_list$join2[i])))
+      # update singles
+      newlist <- as.integer(c(nb_temp[[id_to_join[i]]], id_join2))
+      nb_temp[[id_to_join[i]]] <- newlist[!duplicated(newlist)]
+      if(!is_empty(-which(nb_temp[[id_to_join[i]]] == 0))){
+        # remove zeros
+        nb_temp[[id_to_join[i]]] <- nb_temp[[id_to_join[i]]][-which(nb_temp[[id_to_join[i]]] == 0)]
+      }
+    } 
+  }
+  
+  # ensure nb object is symmetric
+  nb_out <- make.sym.nb(nb_temp)
+  
+  # check connectedness
+  W <- nb2mat(nb_out, style = "B", zero.policy = TRUE)
+  gg <- graph.adjacency(W)
+  clu <- components(gg)
+  cc <- igraph::groups(clu)
+  message("There are ", length(cc), " unique groups of neighbours!")
+  
+  # return the nb object
+  return(list(nb = nb_out, 
+              W = W,
+              group_membership = cc))
+  
+}

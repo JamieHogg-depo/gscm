@@ -81,7 +81,25 @@
 	Most of the hyperpriors are just sampling from the priors
 	
 	Same as above but using a fixed std of 0.01
-		- with LCAR for all parameters we geet good sampling!
+		- with LCAR for all parameters we get good sampling!
 		- no data scaling required
 		- Only 5 transitions that exceeded the max treedepth
 		- 16% have very bad pareto K values
+		
+## HPC RUN 20230823 ##
+	All ME included using adapt_delta = 0.95 and max_treedepth = 12
+	niter = 4000, warmup = 2000
+	- walltime: max was 7 hours 
+	- mem: 20 GB
+  
+## HPC RUN 20230823 ##
+	ME = 0 using adapt_delta = 0.95 and max_treedepth = 12
+	niter = 4000, warmup = 2000
+	- walltime: max was 22 hours
+	- mem: max was 23 GB
+	
+## HPC RUN 20230825
+	BFM run using adapt_delta = 0.95 and max_treedepth = 12
+	niter = 4000, warmup = 2000
+	- walltime:  max was 3 hours
+	- mem: max was 24 GB
