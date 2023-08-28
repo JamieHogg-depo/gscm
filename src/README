@@ -103,3 +103,9 @@
 	niter = 4000, warmup = 2000
 	- walltime:  max was 3 hours
 	- mem: max was 24 GB
+	
+## HPC RUN 20230829
+	BFM run using adapt_delta = 0.95 and max_treedepth = 12
+	niter = 4000, warmup = 2000
+	- walltime:  max 1.25 hours
+	- mem: max 22 GB

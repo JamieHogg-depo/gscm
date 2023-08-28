@@ -2,6 +2,11 @@
 jf <- list()
 
 ## ----------------------------------------------------------------------------
+jf$norm = function(x){
+	(x-min(x, na.rm = T))/(max(x, na.rm = T)-min(x, na.rm = T))
+}
+
+## ----------------------------------------------------------------------------
 #' @param W binary contiguity matrix (must be complete)
 #' @description similar to mungeCARdata function
 # requires spdep
@@ -373,8 +378,8 @@ for(i in 1:nrow(new_assigns)){
 }
 
 # check connectedness
-gg <- graph.adjacency(W_working)
-clu <- components(gg)
+gg <- igraph::graph.adjacency(W_working)
+clu <- igraph::components(gg)
 cc <- igraph::groups(clu)
 message("There are ", length(cc), " unique groups of neighbours!")
 
