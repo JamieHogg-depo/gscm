@@ -88,6 +88,102 @@ jf$scaleMarginal <- function(mat){
 }
 
 ## -----------------------------------------------------------------------------
+#' @param draws iterations by observations
+#' @param model model column content (as single character)
+#' @param metric metric column content (as single character)
+#' @param conf_level numeric for the confidence size of the interval (defaults to 0.95)
+#' @param other_data data.frame with other data to be column binded to result 
+# (NOTE: must be same dimensions and same order!)
+#' @param prefix character vector added to point, upper, lower, se and RSE columns (defaults to "")
+#' @param addDPP logical (defaults to false)
+#' @returns Dataset with posterior summaries including: 
+# median point estimates, credible intervals (HDI)
+# standard deviations and RSE
+# More arguments can be passed to the getDPP() function using `...` (e.g. null_value)
+jf$getResultsData <- function(draws, 
+                           model = NULL, metric = NULL,
+                           prefix = "",
+                           conf_level = 0.95,
+                           other_data = NULL, addDPP = FALSE, ...){
+  
+  # sum_func <- function(x){
+  #   c(point = median(x, na.rm = T),
+  #     lower = unname(HDInterval::hdi(x, credMass = conf_level)[1]),
+  #     upper = unname(HDInterval::hdi(x, credMass = conf_level)[2]),
+  #     se = sd(x, na.rm = T))
+  # }
+  # bind_rows(pblapply(asplit(draws, 2), sum_func))
+  
+  if(!is.null(other_data)){
+    message(paste0("NOTE (not an error): Please check that the row order of ", deparse(substitute(other_data)), " matches that of the column order of ", deparse(substitute(draws))))
+    if(nrow(other_data) != ncol(draws))stop(paste0("The number of columns of ", deparse(substitute(draws)), " does NOT match the number of rows of ", deparse(substitute(other_data)), ". They must match!"))
+  }
+  
+  if(is.null(dim(draws))){
+    r <- data.frame(point = draws,
+                    lower = NA,
+                    upper = NA,
+                    se = NA) %>%
+      mutate(RSE = NA) %>%
+      setNames(paste0(prefix, names(.)))
+    r <- bind_cols(r, other_data)
+  }else{
+    # Get objects
+    point_in = apply(draws, 2, median, na.rm = T)
+    se_in = apply(draws, 2, sd, na.rm = T)
+    hd_ints = apply(draws, 2, HDInterval::hdi, credMass = conf_level)
+    if(addDPP){
+      DPP <- jf$getDPP(draws, ...)
+      r <- data.frame(point = point_in,
+                      #lower = apply(draws, 2, quantile, prob = 0.025, na.rm = T),
+                      lower = hd_ints[1,],
+                      #upper = apply(draws, 2, quantile, prob = 0.975, na.rm = T),
+                      upper = hd_ints[2,],
+                      se = se_in,
+                      EP = DPP$EP,
+                      compared_to_null = DPP$compared_to_null,
+                      DPP = DPP$DPP,
+                      DPPsig = DPP$DPP_sig) %>%
+        mutate(RSE = 100 * (se/abs(point))) %>%
+        setNames(paste0(prefix, names(.)))
+      r <- bind_cols(r, other_data)
+    }else{
+      r <- data.frame(point = point_in,
+                      #lower = apply(draws, 2, quantile, prob = 0.025, na.rm = T),
+                      lower = hd_ints[1,],
+                      #upper = apply(draws, 2, quantile, prob = 0.975, na.rm = T),
+                      upper = hd_ints[2,],
+                      se = se_in) %>%
+        mutate(RSE = 100 * (se/abs(point))) %>%
+        setNames(paste0(prefix, names(.)))
+      r <- bind_cols(r, other_data)
+    }
+  }
+  
+  # Add columns if given
+  if(!is.null(model) & !is.null(metric)){
+    r <- r %>% 
+      mutate(model = model,
+             metric = metric) %>% 
+      relocate(model, metric)
+  }
+  if(!is.null(model) & is.null(metric)){
+    r <- r %>% 
+      mutate(model = model) %>% 
+      relocate(model)
+  }
+  if(is.null(model) & !is.null(metric)){
+    r <- r %>% 
+      mutate(metric = metric) %>% 
+      relocate(metric)
+  }
+  
+  # return objects
+  rownames(r) <- NULL
+  return(r)
+}
+
+## -----------------------------------------------------------------------------
 #' @import spdep and igraph
 #' @param sf_data sf data with geometry and 5-digit sa2 codes
 #' @param sa2_name character vector specifying the variable with 5digit sa2 codes. Default is "Sa2_5dig16". 
@@ -231,4 +327,59 @@ jf$getConnectedNB2 <- function(sf_data,
               W = W,
               group_membership = cc))
   
+}
+
+## ----------------------------------------------------------------------------
+jf$connectW <- function(sf_data){
+  
+  # get original W
+  W <- nb2mat(poly2nb(sf_data), style = "B", zero.policy = TRUE)
+  
+  if(!any(names(sf_data) %in% "Sa2_name16")){
+    message("Must have column called Sa2_name16")
+    break
+  }
+
+# set changes 
+new_assigns <- data.frame(area1 = c("King Island", "King Island",
+                                    "Flinders and Cape Barren Islands", "Flinders and Cape Barren Islands",
+                                    "Bribie Island",
+                                    "Palm Island",
+                                    "Magnetic Island",
+                                    "Redland Islands",
+                                    "Phillip Island",
+                                    "French Island",
+                                    "Kangaroo Island",
+                                    "Tiwi Islands",
+                                    "Anindilyakwa",
+                                    "Torres Strait Islands"),
+                          area2 = c("Otway", "North West",
+                                    "Wilsons Promontory", "Scottsdale - Bridport",
+                                    "Beachmere - Sandstone Point",
+                                    "Ingham Region",
+                                    "Belgian Gardens - Pallarenda",
+                                    "Jacobs Well - Alberton",
+                                    "Wonthaggi - Inverloch",
+                                    "Wonthaggi - Inverloch",
+                                    "Yankalilla",
+                                    "Koolpinyah",
+                                    "Gulf",
+                                    "Torres"))
+
+W_working <- W
+for(i in 1:nrow(new_assigns)){
+  W_working[sf_data$Sa2_name16 == new_assigns$area1[i],sf_data$Sa2_name16 == new_assigns$area2[i]] <- 1
+  W_working[sf_data$Sa2_name16 == new_assigns$area2[i],sf_data$Sa2_name16 == new_assigns$area1[i]] <- 1
+}
+
+# check connectedness
+gg <- graph.adjacency(W_working)
+clu <- components(gg)
+cc <- igraph::groups(clu)
+message("There are ", length(cc), " unique groups of neighbours!")
+
+# return the nb object
+return(list(W = W_working,
+            group_membership = cc))
+
 }
