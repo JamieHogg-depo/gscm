@@ -13,7 +13,7 @@ library(loo)
 library(bayesplot)
 library(patchwork)
 rm(list = ls())
-source("src/funs.R")
+source("t_src/funs.R")
 
 foo <- function(x)cut_number(x, n = 100, labels = FALSE)
 
