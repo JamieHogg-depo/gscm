@@ -18,11 +18,11 @@ names(all) <- files_fl
 out_all <- lapply(files_fl, readRDS)
 
 # read performance data
-perf_ll <- lapply(files_fl, FUN = function(x)readRDS(x)$perf)
+perf_ll <- lapply(1:length(out_all), FUN = function(x)out_all[[x]]$perf)
 perf <- bind_rows(perf_ll)
 
 # read convergence data
-conv_ll <- lapply(files_fl, FUN = function(x)readRDS(x)$conv)
+conv_ll <- lapply(1:length(out_all), FUN = function(x)out_all[[x]]$conv)
 conv <- bind_rows(conv_ll)
 
 # Load specific large files
