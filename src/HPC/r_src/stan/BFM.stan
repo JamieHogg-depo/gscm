@@ -134,7 +134,12 @@ transformed parameters{
 
 	// non-mean centered parameterisation 
 	// for shared latent factors
-	for(l in 1:L) z[,l] = Z_z[,l] * psi[l];
+	//if(L == 1){
+	//	z[,1] = Z_z[,1]; // L = 1 set latent variance to 1
+	//}
+	//else{
+		for(l in 1:L) z[,l] = Z_z[,l] * psi[l];
+	//}
 	
 	for(k in 1:K){
 		// mean vector
@@ -163,8 +168,10 @@ model {
 	for(l in 1:L){
 		if(shared_latent_rho_fixed == 1)
 			target += ICAR_lpdf( Z_z[,l] | N, node1, node2 ); 
-		else if(shared_latent_rho_fixed == 0)
+		else if(shared_latent_rho_fixed == 0){
 			target += std_normal_lpdf( Z_z[,l] ); 
+			target += normal_lpdf( sum(Z_z[,l]) | 0, 0.001 * N ); // new addition
+		}
 		else{
 			target += LCAR_lpdf( Z_z[,l] | rho[l], 1, C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N ); 
 			target += normal_lpdf( sum(Z_z[,l]) | 0, 0.001 * N );

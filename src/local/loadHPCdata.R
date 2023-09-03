@@ -4,6 +4,7 @@
 
 # Libraries
 library(tidyverse)
+source("src/funs.R")
 
 # Set date
 cur_date <- "20230901"
@@ -17,15 +18,21 @@ all <- lapply(files_fl, readRDS)
 names(all) <- files_fl
 out_all <- lapply(files_fl, readRDS)
 
+# get grid
+grid <- bind_rows(lapply(1:length(out_all), FUN = function(x)out_all[[x]]$cur_model_spec))
+
 # read performance data
 perf_ll <- lapply(1:length(out_all), FUN = function(x)out_all[[x]]$perf)
 perf <- bind_rows(perf_ll)
 
 # read convergence data
 conv_ll <- lapply(1:length(out_all), FUN = function(x)out_all[[x]]$conv)
-conv <- bind_rows(conv_ll)
+conv <- bind_rows(conv_ll, .id = "ix")
+
+# Convergence plot
+out_all[[13]]$summ %>% ggplot(aes(y = rhat, x = variable_gr))+geom_boxplot()
 
 # Load specific large files
-out_l <- readRDS(paste0("Z:/gscm/outputs/", cur_date, "/r/GSCM_L_1__shared_latent_rho_fixed_0__specific_latent_rho_fixed_0_ix1_f.rds"))
+out_full <- readRDS("Z:/gscm/outputs/20230901/r/model_GSCM__L_2__shared1_ix10_fitonly.rds")
 
 ## END SCRIPT ## ---------------------------------------------------------------

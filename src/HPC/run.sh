@@ -1,11 +1,12 @@
 #!/bin/bash
 
-base_folder='gscm'
-which_m='BFM'
+base_folder='gscm' # do not change this
+
+which_m='GSCM'
 all_aus=1
 
 # Model
-for grid_ix in {1..3}
+for grid_ix in 1 2 #{1..12}
 do
 
 	# get the current date
@@ -25,9 +26,9 @@ do
 	cat > $base_folder/sub_src/$cur_date/$file <<EOF
 #!/bin/bash -l
 #PBS -N $specs
-#PBS -l ncpus=4
+#PBS -l ncpus=2
 #PBS -l mem=50GB
-#PBS -l walltime=24:00:00
+#PBS -l walltime=48:00:00
 #PBS -e $base_folder/outputs/$cur_date/lyra_errors/$specs
 #PBS -o $base_folder/outputs/$cur_date/lyra_out/$specs
 

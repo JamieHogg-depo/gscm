@@ -15,6 +15,12 @@
 
 # Load functions
 	source(paste0(base_folder, "/r_src/funs.R"))
+	
+# Set Stan settings
+	chains = 2
+	iter = 6000 
+	warmup = 3000
+	thin = 3
 
 # Load data
 
@@ -38,43 +44,48 @@
 	# Set input data
 	if(all_aus){
 		census <- global_obj$census
-		# weight matrix
-		#W <- global_obj$W
-		for_stan <- jf$prep4MLCAR(W)
-		icar_for_stan <- jf$prep4ICAR(W)
 		# risk factor estimates
 		rf_data <- rf_list$point[,-c(1:2)]
 		rf_data_sd <- rf_list$sd[,-c(1:2)]
 	}else{
 		census <- global_obj$census %>% filter(ps_state == 6)
 		# weight matrix
-		#W <- global_obj$W[global_obj$census$ps_state == 6, global_obj$census$ps_state == 6]
 		W <- W[global_obj$census$ps_state == 6, global_obj$census$ps_state == 6]
-		for_stan <- jf$prep4MLCAR(W)
-		icar_for_stan <- jf$prep4ICAR(W)
 		# risk factor estimates
 		rf_data <- rf_list$point[global_obj$census$ps_state == 6,-c(1:2)]
 		rf_data_sd <- rf_list$sd[global_obj$census$ps_state == 6,-c(1:2)]
 	}
 
+# spatial objects
+listw <- mat2listw(W)
+for_stan <- jf$prep4MLCAR(W)
+icar_for_stan <- jf$prep4ICAR(W)
+
 # Define grid of values
-grid <- expand.grid(L = c(1,2),
+grid <- expand.grid(L = 2, #c(1,2),
                     shared_latent_rho_fixed = 1, #c(0,1,2),
-                    specific_latent_rho_fixed = 0, #c(0,1,2),
+                    specific_latent_rho_fixed = 1, #c(0,1,2),
                     gamma_var_prior = c(0,1),
                     me0_std = 0.01,
-                    me = 1, #c(0,1),
+                    me = 1,
                     gamma_a = 2,
-                    gamma_b = 1)
-grid <- data.frame(L = c(1,2,2),
+                    gamma_b = 1,
+					fo = c("smoking__alcohol"))#, "activityleiswkpl__alcohol", "diet__alcohol"))
+grid2 <- data.frame(L = c(1,2,2),
                    shared_latent_rho_fixed = c(0,0,2),
                    specific_latent_rho_fixed = 0,
                    gamma_var_prior = 1,
                    me0_std = 0.01,
                    me = c(0,0,0),
                    gamma_a = 2,
-                   gamma_b = 1)
+                   gamma_b = 1,
+				   fo = "activityleiswkpl__alcohol")
 cur_model_spec <- grid[grid_ix,]
+
+# Recorder columns
+feat_order <- as.character(str_split_fixed(cur_model_spec$fo, "__", 2))
+rf_data <- rf_data %>% relocate(feat_order)
+rf_data_sd <- rf_data_sd %>% relocate(feat_order)
 
 # prepare output list
 ll_out <- list()
