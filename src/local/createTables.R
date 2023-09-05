@@ -41,7 +41,7 @@ out_all[[x]]$summ_hp %>%
   mutate(model_spec = getModelSpecs(out_all[[x]]$cur_model_spec)) %>% 
   relocate(model_spec)
 }
-hyper_table <- bind_rows
+hyper_table <- bind_rows(lapply(1:length(out_all), foo))
 rm(foo)
 
 # Model fit 
@@ -65,7 +65,7 @@ latentvar_table <- bind_rows(lapply(1:length(out_all), foo))
 rm(foo)
 
 ## JOIN ALL TABLES ## ----------------------------------------------------------
-list(latentvar_table, modelfit_table, hyper_table) %>% 
+full_table <- list(latentvar_table, modelfit_table, hyper_table) %>% 
   reduce(left_join, by = "model_spec")
 
 ## END SCRIPT ## ---------------------------------------------------------------

@@ -62,6 +62,9 @@ which(tg == (-1*min(abs(tg))), arr.ind=TRUE)
 # diet and alcohol are the least correlated
 # Based on P0389 we would put: diet, alcohol
 
+# New development: Diet and smoking are the least correlated
+# Based on P0389 we would put: smoking, diet - smoking is first as it has the largest variance
+
 ## Based on PCA ## -------------------------------------------------------------
 
 pp <- prcomp(data, scale. = TRUE)
@@ -69,5 +72,5 @@ pp$rotation
 summary(pp)
 
 # Based on PCA we would put: smoking, alcohol
-# First two principal components capture 86% of variation
+# First two principal components capture 73% of variation
 

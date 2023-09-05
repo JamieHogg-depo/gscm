@@ -220,6 +220,20 @@ jf$getSubsetConvergence <- function(summary, regex, set){
 }
 
 ## -----------------------------------------------------------------------------
+#' @param summ summ object from model run
+#' @param rr rounding value
+#' @param number of latent factors (should be 1 or 2) 
+jf$reportFL <- function(summ, rr, L){
+  
+  points <- round(summ[str_detect(summ$variable, "Lambda\\["),]$mean, rr)
+  lower <- round(summ[str_detect(summ$variable, "Lambda\\["),]$q5, rr)
+  upper <- round(summ[str_detect(summ$variable, "Lambda\\["),]$q95, rr)
+  
+  return(matrix(paste0(points, " (", lower, ", ", upper, ")"), byrow = F, ncol = L))
+}
+
+
+## -----------------------------------------------------------------------------
 #' @import spdep and igraph
 #' @param sf_data sf data with geometry and 5-digit sa2 codes
 #' @param sa2_name character vector specifying the variable with 5digit sa2 codes. Default is "Sa2_5dig16". 
@@ -418,5 +432,93 @@ message("There are ", length(cc), " unique groups of neighbours!")
 return(list(W = W_working,
             group_membership = cc))
 
+}
+
+## -----------------------------------------------------------------------------
+# simple function to streamline the saving of plots
+jf$jsave <- function(filename, base_folder, 
+                  plot = last_plot(), 
+                  square = T, 
+                  square_size = 5000,
+                  scale = 1,
+                  ratio = c(6,9),
+                  dpi = 1000){
+  if(square){
+    ggsave(filename = filename,
+           plot = plot,
+           path = base_folder,
+           dpi = dpi,
+           width = square_size,
+           height = square_size,
+           scale = scale,
+           units = "px")
+  }else{
+    total = square_size^2
+    a <- sqrt((total*ratio[1])/ratio[2])
+    b <- (ratio[2]*a)/ratio[1]
+    ggsave(filename = filename,
+           plot = plot, 
+           path = base_folder,
+           dpi = dpi,
+           width = round(b),
+           height = round(a),
+           scale = scale,
+           units = "px")
+  }
+}
+
+## -----------------------------------------------------------------------------
+# used in pipes to enforce rounding
+jf$make_numeric_decimal <- function(.data, digits = 2){
+  df <- .data
+  cols_to_format <- unlist(lapply(df, is.numeric))
+  df[,cols_to_format] <- bind_cols(lapply(df[,cols_to_format], sprintf, fmt = paste0('%#.', digits, 'f')))
+  return(df)
+}
+
+## -----------------------------------------------------------------------------
+# adds boxlabels to maps
+jf$addBoxLabel <- function(i, color = "white", size = 0.5){
+  if(lims$position[i] == "r"){
+    list(
+      annotate("rect", 
+               xmin = lims$xmin[i], xmax = lims$xmax[i],
+               ymin = lims$ymin[i], ymax = lims$ymax[i],
+               color = color, fill = NA, size = size),
+      annotate("text", y = mean(c(lims$ymin[i], lims$ymax[i])), 
+               x = lims$xmax[i] + 1, label = lims$initials[i],
+               size = 3) 
+    )
+  } else if(lims$position[i] == "b"){
+    list(
+      annotate("rect", 
+               xmin = lims$xmin[i], xmax = lims$xmax[i],
+               ymin = lims$ymin[i], ymax = lims$ymax[i],
+               color = color, fill = NA, size = size),
+      annotate("text", x = mean(c(lims$xmin[i], lims$xmax[i])), 
+               y = lims$ymin[i] - 1, label = lims$initials[i],
+               size = 3) 
+    )
+  } else if(lims$position[i] == "l"){
+    list(
+      annotate("rect", 
+               xmin = lims$xmin[i], xmax = lims$xmax[i],
+               ymin = lims$ymin[i], ymax = lims$ymax[i],
+               color = color, fill = NA, size = size),
+      annotate("text", y = mean(c(lims$ymin[i], lims$ymax[i])), 
+               x = lims$xmin[i] - 1, label = lims$initials[i],
+               size = 3) 
+    )
+  }else{
+    list(
+      annotate("rect", 
+               xmin = lims$xmin[i], xmax = lims$xmax[i],
+               ymin = lims$ymin[i], ymax = lims$ymax[i],
+               color = color, fill = NA, size = size),
+      annotate("text", x = mean(c(lims$xmin[i], lims$xmax[i])), 
+               y = lims$ymax[i] + 1, label = lims$initials[i],
+               size = 3) 
+    )
+  }
 }
 
