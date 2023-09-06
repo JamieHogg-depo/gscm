@@ -31,6 +31,56 @@ getMedQuant <- function(x, rr){
   paste0(median, " (", q25, ", ", q75, ")")
 }
 
+# RF full names
+lookup <- data.frame(rf = c("activityleis", 
+                            "activityleiswkpl",
+                            "alcohol",
+                            "diet",
+                            "obesity",
+                            "overweight",
+                            "smoking",
+                            "waist_circum"),
+                     rf_full = c("Inadequate physical activity (leisure)",
+                                 "Inadequate physical activity (all)",
+                                 "Risky alcohol consumption",
+                                 "Inadequate diet",
+                                 "Obese",
+                                 "Overweight/obese",
+                                 "Current smoking",
+                                 "Risky waist circumference"))
+
+## Data summary ## -------------------------------------------------------------
+
+rr <- 2
+data %>% 
+  summarise_all(list(min = ~sprintf(min(.), fmt = paste0('%#.',rr,'f')),
+                     q25 = ~sprintf(quantile(., probs = 0.25), fmt = paste0('%#.',rr,'f')),
+                     median = ~sprintf(median(.), fmt = paste0('%#.',rr,'f')),
+                     q75 = ~sprintf(quantile(., probs = 0.75), fmt = paste0('%#.',rr,'f')),
+                     max = ~sprintf(max(.), fmt = paste0('%#.',rr,'f')))) %>% 
+  pivot_longer(everything()) %>% 
+  separate(name, c("rf", "metric")) %>% 
+  pivot_wider(names_from = metric, values_from = value) %>% 
+  left_join(.,lookup) %>% 
+  dplyr::select(-1) %>% 
+  relocate(rf_full)
+
+rr <- 2
+data_sd %>% 
+  summarise_all(list(min = ~sprintf(min(.), fmt = paste0('%#.',rr,'f')),
+                     q25 = ~sprintf(quantile(., probs = 0.25), fmt = paste0('%#.',rr,'f')),
+                     median = ~sprintf(median(.), fmt = paste0('%#.',rr,'f')),
+                     q75 = ~sprintf(quantile(., probs = 0.75), fmt = paste0('%#.',rr,'f')),
+                     max = ~sprintf(max(.), fmt = paste0('%#.',rr,'f')))) %>% 
+  pivot_longer(everything()) %>% 
+  separate(name, c("rf", "metric")) %>% 
+  pivot_wider(names_from = metric, values_from = value) %>% 
+  left_join(.,lookup) %>% 
+  dplyr::select(-1) %>% 
+  relocate(rf_full)
+
+## Model comparison ## ---------------------------------------------------------
+
 # Hyperpriors
 foo <- function(x){
 out_all[[x]]$summ_hp %>% 

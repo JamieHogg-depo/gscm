@@ -5,6 +5,15 @@
 
 source("src/local/funs.R")
 
+## Correlation plot ## ---------------------------------------------------------
+
+res <- cor(data)
+corrplot(res, type = "upper", 
+         tl.col = "black", tl.srt = 45)
+jf$jsave()
+
+## END SCRIPT ## ---------------------------------------------------------------
+
 
 data.frame(bfm = out_all[[2]]$summ_latent1$raww$se,
            gscm = out_all[[4]]$summ_latent2$raww$se) %>% 
