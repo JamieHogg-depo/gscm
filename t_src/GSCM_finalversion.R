@@ -46,7 +46,7 @@ map_sa2 <- st_read("C:/r_proj/ACAriskfactors/data/2016_SA2_Shape_min/2016_SA2_Sh
 
 # compile model
 unlink("src/stan/*.rds")
-comp <- stan_model(file = "src/stan/GSCM_finalversion.stan")
+comp <- stan_model(file = "t_src/stan/GSCM_HPCversion.stan")
 
 # data list
 d <- list(# data
@@ -57,10 +57,11 @@ d <- list(# data
           Y_sd_v = as.numeric(as.matrix(data_sd)),
           #Y_sd = data_sd,
           # model specification
-          L = 2,
-          shared_latent_rho_fixed = 2,
-          specific_latent_rho_fixed = 0,
-          gamma_var_prior = 1,
+          L = 1,
+          shared_latent_rho_fixed = 1,
+          specific_latent_rho_fixed = 1,
+          latent_var_fixed = 0,
+          gamma_var_prior = 0,
           me0_std = 0.01,
           me = 1,
           gamma_a = 2, 
@@ -71,14 +72,14 @@ d <- c(d, for_stan, icar_for_stan)
 # fit model
 m_s <- Sys.time()
 fit <- sampling(object = comp, 
-                pars = c("Z_z", "mu", "Z_epsilon", "epsilon"),
-                include = FALSE,
+                #pars = c("Z_z", "mu", "Z_epsilon", "epsilon"),
+                #include = FALSE,
                 data = d, 
                 init = 0, 
-                chains = 4,
+                chains = 2,
                 control = list(adapt_delta = 0.95),
                 iter = 4000, warmup = 2000, 
-                cores = 4)
+                cores = 2)
 (rt <- as.numeric(Sys.time() - m_s, units = "mins"))
 # Summarise draws
 summ <- as.data.frame(summary(fit)$summary) %>% 
@@ -88,7 +89,7 @@ Lambda_point <- matrix(summ[str_detect(summ$parameter, "Lambda\\["),]$mean, byro
 
 print(fit, pars = c("alpha", "Lambda_ld", "sigma", "psi", 'rho', "kappa"))
 print(fit, pars = "Lambda")
-stan_trace(fit, pars = c("alpha", "Lambda_ld", "sigma", "psi", 'rho', "kappa"))
+stan_trace(fit, pars = c("alpha", "Lambda", "sigma", "psi", 'rho', "kappa"))
 
 # get latent field
 draws <- rstan::extract(fit)
@@ -105,6 +106,9 @@ loo_out
 # L = 2, LCAR for shared only: 166.5 (11.3) - best convergence
 # L = 2, SDNORM for both: 134.4 (13.0)
 # L = 1, SDNORM for both: 132.6 (13.3)
+
+loo_out1 <- rstan::loo(fit)
+loo_out2 <- rstan::loo(fit, moment_match = T)
 
 ## PPC
 yrep <- draws$Y_rep[,,1]
