@@ -14,10 +14,18 @@ jf$jsave()
 
 ## END SCRIPT ## ---------------------------------------------------------------
 
-
-data.frame(bfm = out_all[[2]]$summ_latent1$raww$se,
-           gscm = out_all[[4]]$summ_latent2$raww$se) %>% 
-  ggplot(aes(y = bfm, x = gscm))+
+id1x <- 7
+id2x <- 8
+data.frame(x1 = out_all[[id1x]]$summ_latent1$rankk$point,
+           x1_l = out_all[[id1x]]$summ_latent1$rankk$lower,
+           x1_u = out_all[[id1x]]$summ_latent1$rankk$upper,
+           x2 = out_all[[id2x]]$summ_latent1$rankk$point,
+           x2_l = out_all[[id2x]]$summ_latent1$rankk$lower,
+           x2_u = out_all[[id2x]]$summ_latent1$rankk$upper) %>% 
+  ggplot(aes(y = x1, ymin = x1_l, ymax = x1_u,
+             x = x2, xmin = x2_l, xmax = x2_u))+
+  geom_errorbar(col = "grey")+
+  geom_errorbarh(col = "grey")+
   geom_abline()+
   geom_point()
 
