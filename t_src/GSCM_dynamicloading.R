@@ -135,9 +135,9 @@ var_y <- function(x) var(x, na.rm = T)
 (ppc_stat(unlist(data[,fe]), yrep, stat = "var_y") + labs(title = "Variance"))
 
 # PPC
-fe <- 3
+fe <- 2
 yrep <- draws$yrep[,,fe]
-ppc_dens_overlay(unlist(data[,fe]), yrep[1:50,])
+ppc_dens_overlay(unlist(data[,fe]), yrep[1:100,])+xlim(-4,2)
 ppc_boxplot(unlist(data[,fe]), yrep[1:8,])
 ppc_ecdf_overlay(unlist(data[,fe]), yrep[1:50,])
 
