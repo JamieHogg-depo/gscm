@@ -9,7 +9,7 @@ rm(list = ls())
 source("src/local/funs.R")
 
 # Set date
-cur_date <- "20230907"
+cur_date <- "20230910"
 
 # list files
 files <- list.files(paste0("Z:/gscm/outputs/", cur_date, "/r"), full.names = T)
@@ -31,10 +31,11 @@ conv_ll <- lapply(1:length(out_all), FUN = function(x)out_all[[x]]$conv)
 conv <- bind_rows(conv_ll, .id = "ix")
 
 # Convergence plot
-out_all[[4]]$summ %>% 
+out_all[[1]]$summ %>% 
   ggplot(aes(y = rhat, x = variable_gr))+
   geom_boxplot()+
-  geom_hline(yintercept = c(1,1.02))
+  geom_hline(yintercept = c(1,1.02))+
+  ylim(1,1.2)
 
 # Load specific large files
 out_full1 <- readRDS("Z:/gscm/outputs/20230904/r/ix1_model_GSCM__L_2__shared1_fitonly.rds")
