@@ -51,8 +51,14 @@ map_sa2 <- st_read("C:/r_proj/ACAriskfactors/data/2016_SA2_Shape_min/2016_SA2_Sh
 G <- t(model.matrix(~census$ra_sa2_3c - 1))
 
 # compile model
-unlink("src/stan/*.rds")
-comp <- stan_model(file = "t_src/stan/GSCM_dynamicloading.stan")
+unlink("t_src/stan/*.rds")
+#comp <- stan_model(file = "t_src/stan/GSCM_dynamicloading.stan")
+comp <- stan_model(file = "t_src/stan/GSCM_HPCversion.stan")
+
+# scale data
+tt <- jf$scaleData(data, data_sd)
+data <- tt$data
+data_sd <- tt$data_sd
 
 # data list
 d <- list(# data
@@ -65,7 +71,7 @@ d <- list(# data
           Y_sd_v = as.numeric(as.matrix(data_sd)),
           #Y_sd = data_sd,
           # model specification
-          L = 2,
+          L = 1,
           shared_latent_rho_fixed = 1,
           specific_latent_rho_fixed = 0,
           kappa_fixed = 0.98,

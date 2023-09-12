@@ -232,6 +232,37 @@ jf$reportFL <- function(summ, rr, L){
   return(matrix(paste0(points, " (", lower, ", ", upper, ")"), byrow = F, ncol = L))
 }
 
+## -----------------------------------------------------------------------------
+#' @param input_pt
+#' @param input_sd
+jf$scaleData <- function(input_pt, input_sd){
+  
+  new_pt <- list()
+  new_sd <- list()
+  
+  # for loop
+  for(i in 1:ncol(input_pt)){
+    
+    # subset
+    pt <- unlist(input_pt[,i])
+    sd <- unlist(input_sd[,i])
+    
+    # rescale pt
+    new_pt[[i]] <- (pt - mean(pt))/sd(pt)
+    
+    # rescale sd
+    new_sd[[i]] <- sqrt( sd^2 * (sd(pt)^(-2)) )
+  }
+  
+  names(new_pt) <- names(input_pt)
+  names(new_sd) <- names(input_sd)
+  
+  # return
+  return(list(data = bind_cols(new_pt),
+              data_sd = bind_cols(new_sd)))
+}
+
+
 
 ## -----------------------------------------------------------------------------
 #' @import spdep and igraph
