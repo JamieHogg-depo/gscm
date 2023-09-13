@@ -1,16 +1,20 @@
 
+cur_list <- out_all[[3]]
 
-plot(cbind(out_all[[4]]$data$y_sd, out_all[[4]]$summ_latent1$raww$se))
-GGally::ggpairs(cbind(out_all[[4]]$data$y, out_all[[4]]$summ_latent1$rankk$point))+
+## Pairs plot ## ---------------------------------------------------------------
+
+pr <- prcomp(cur_list$data$y, scale. = T)
+GGally::ggpairs(cbind(cur_list$data$y, 
+                      latent1 = cur_list$summ_latent1$raww$point, 
+                      latent2 = cur_list$summ_latent2$raww$point,
+                      pc1 = pr$x[,1],
+                      pc2 = pr$x[,2]))+
   theme_bw()
 
-GGally::ggpairs(cbind(data, out_all[[4]]$summ_latent1$raww$point, out_all[[4]]$summ_latent2$raww$point))+
-  theme_bw()
-
-## Rank #### -------------------------------------------------------------------
+## Raw #### --------------------------------------------------------------------
 
 # SETUP
-mapping_data <- out_all[[4]]$summ_latent1$raww %>% 
+mapping_data <- cur_list$summ_latent1$raww %>% 
   cbind(.,map_sa2) %>% 
   st_as_sf() %>%
   st_transform(4326)
@@ -34,7 +38,7 @@ base <- mapping_data %>%
 
 # Base map with legend
 (base_legend <- base +
-    labs(fill = "Posterior median")+
+    labs(fill = "Raw (posterior median)")+
     guides(fill = guide_colourbar(barwidth = 13, 
                                   title.position = "top",
                                   title.hjust = 0.5))+
@@ -72,8 +76,8 @@ full_inset_plt <- arrangeGrob(grobs = c(list(base_boxes), inset_list, list(llege
                               top = textGrob("Latent 1",gp=gpar(fontsize=8)))
 
 # save object
-jf$jsave(filename = paste0("raw_", rf ,".png"), 
-         base_folder = paste0(base_folder, "/maps_lowres"),
+jf$jsave(filename = "raw.png", 
+         base_folder = "out",
          plot = full_inset_plt, square = F,
          square_size = 1200,
          dpi = 300)
@@ -85,7 +89,7 @@ message("---- Finished raw")
 ## Rank #### -------------------------------------------------------------------
 
 # SETUP
-mapping_data <- out_all[[4]]$summ_latent1$rankk %>% 
+mapping_data <- cur_list$summ_latent1$rankk %>% 
   cbind(.,map_sa2) %>% 
   st_as_sf() %>%
   st_transform(4326)
@@ -97,7 +101,7 @@ base <- mapping_data %>%
   geom_sf(aes(fill = point), col = NA)+
   scale_fill_viridis_c(begin = 0, end = 1, 
                        direction = -1,
-                       option = "D")+
+                       option = "E")+
   geom_sf(data = aus_border, aes(geometry = geometry), 
           colour = "black", fill = NA, size = 0.2)+
   geom_sf(data = state_border, aes(geometry = geometry), 
@@ -109,7 +113,7 @@ base <- mapping_data %>%
 
 # Base map with legend
 (base_legend <- base +
-    labs(fill = "Posterior rank")+
+    labs(fill = "Rank (posterior median)")+
     guides(fill = guide_colourbar(barwidth = 13, 
                                   title.position = "top",
                                   title.hjust = 0.5))+
@@ -147,8 +151,8 @@ full_inset_plt <- arrangeGrob(grobs = c(list(base_boxes), inset_list, list(llege
                               top = textGrob("Latent 1",gp=gpar(fontsize=8)))
 
 # save object
-jf$jsave(filename = paste0("rank_", rf ,".png"), 
-         base_folder = paste0(base_folder, "/maps_lowres"),
+jf$jsave(filename = "rank.png", 
+         base_folder = "out",
          plot = full_inset_plt, square = F,
          square_size = 1200,
          dpi = 300)
@@ -160,7 +164,7 @@ message("---- Finished rank")
 ## Percentiles #### ------------------------------------------------------------
 
 # SETUP
-mapping_data <- out_all[[4]]$summ_latent1$perc %>% 
+mapping_data <- cur_list$summ_latent1$perc %>% 
   cbind(.,map_sa2) %>% 
   st_as_sf() %>%
   st_transform(4326)
@@ -172,7 +176,7 @@ base <- mapping_data %>%
   geom_sf(aes(fill = point), col = NA)+
   scale_fill_viridis_c(begin = 0, end = 1, 
                        direction = -1,
-                       option = "D")+
+                       option = "F")+
   geom_sf(data = aus_border, aes(geometry = geometry), 
           colour = "black", fill = NA, size = 0.2)+
   geom_sf(data = state_border, aes(geometry = geometry), 
@@ -184,7 +188,7 @@ base <- mapping_data %>%
 
 # Base map with legend
 (base_legend <- base +
-    labs(fill = "Percentiles")+
+    labs(fill = "Percentiles (posterior median)")+
     guides(fill = guide_colourbar(barwidth = 13, 
                                   title.position = "top",
                                   title.hjust = 0.5))+
@@ -222,8 +226,8 @@ full_inset_plt <- arrangeGrob(grobs = c(list(base_boxes), inset_list, list(llege
                               top = textGrob("Latent 1",gp=gpar(fontsize=8)))
 
 # save object
-jf$jsave(filename = paste0("perc_", rf ,".png"), 
-         base_folder = paste0(base_folder, "/maps_lowres"),
+jf$jsave(filename = "perc.png", 
+         base_folder = "out",
          plot = full_inset_plt, square = F,
          square_size = 1200,
          dpi = 300)
@@ -235,7 +239,7 @@ message("---- Finished perc")
 ## EP #### ---------------------------------------------------------------------
 
 # SETUP
-mapping_data <- as.data.frame(out_all[[4]]$EP) %>% 
+mapping_data <- as.data.frame(cur_list$EP) %>% 
   cbind(.,map_sa2) %>% 
   mutate(V1 = ifelse(V1 == 0, 0.001, V1),
          V1 = ifelse(V1 == 1, 0.999, V1),
@@ -248,7 +252,7 @@ mapping_data <- as.data.frame(out_all[[4]]$EP) %>%
 base <- mapping_data %>% 
   ggplot()+
   theme_void()+
-  geom_sf(aes(fill = V2), col = NA)+
+  geom_sf(aes(fill = V1), col = NA)+
   scale_fill_gradientn(colors = c("#008837", "#a6dba0", "white","white","white", "#c2a5cf", "#7b3294"),
                        limits = c(-0.0000001,1.0000001),
                        #oob = squish,
@@ -304,8 +308,8 @@ full_inset_plt <- arrangeGrob(grobs = c(list(base_boxes), inset_list, list(llege
                               top = textGrob("Latent 1",gp=gpar(fontsize=8)))
 
 # save object
-jf$jsave(filename = paste0("ep_", rf ,".png"), 
-      base_folder = paste0(base_folder, "/maps_lowres"),
+jf$jsave(filename = "ep.png", 
+      base_folder = "out",
       plot = full_inset_plt, square = F,
       square_size = 1200,
       dpi = 300)

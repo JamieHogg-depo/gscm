@@ -16,6 +16,17 @@ library(Matrix)
 library(spdep)
 rm(list = ls())
 
+# load global data
+global_obj <- readRDS("data/global_obj.rds")
+
+# load map
+map_sa2 <- st_read("C:/r_proj/ACAriskfactors/data/2016_SA2_Shape_min/2016_SA2_Shape_min.shp") %>%
+  mutate(SA2 = as.numeric(SA2_MAIN16)) %>%
+  filter(!str_detect(SA2_NAME, "Island")) %>%
+  filter(STATE_NAME != "Other Territories") %>%
+  right_join(.,global_obj$area_concor, by = "SA2") %>%
+  right_join(.,global_obj$census, by = "ps_area")
+
 # Load data
 out <- readRDS("data/y_mats.rds")
 data <- out$point[,-c(1:2)]

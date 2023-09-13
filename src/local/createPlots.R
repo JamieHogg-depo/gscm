@@ -16,6 +16,9 @@ summary(pr)
 pr$rotation
 plot(pr)
 
+barplot(pr$rotation[,1], main="PC 1 Loadings", las=2)
+barplot(pr$rotation[,2], main="PC 2 Loadings", las=2)
+
 ## Correlation plot ## ---------------------------------------------------------
 
 # rename columns of data
