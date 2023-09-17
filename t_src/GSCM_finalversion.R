@@ -46,7 +46,7 @@ map_sa2 <- st_read("C:/r_proj/ACAriskfactors/data/2016_SA2_Shape_min/2016_SA2_Sh
 
 # compile model
 unlink("src/stan/*.rds")
-comp <- stan_model(file = "t_src/stan/GSCM_HPCversion.stan")
+comp <- stan_model(file = "t_src/stan/GSCM_HPCversion2.stan")
 
 # data list
 d <- list(# data
@@ -107,8 +107,9 @@ loo_out
 # L = 2, SDNORM for both: 134.4 (13.0)
 # L = 1, SDNORM for both: 132.6 (13.3)
 
-loo_out1 <- rstan::loo(fit)
-loo_out2 <- rstan::loo(fit, moment_match = T)
+loo_out1 <- rstan::loo(fit, pars = "log_lik")
+loo_out2 <- rstan::loo(fit, pars = "log_lik2")
+#loo_out2 <- rstan::loo(fit, moment_match = T)
 
 ## PPC
 yrep <- draws$Y_rep[,,1]

@@ -140,7 +140,7 @@ transformed parameters{
 		  Lambda[i,j] = Lambda_ld[idx2];
 		} 
 	}
-	//Lambda[2,1] = 0;
+	Lambda[2,1] = 0;
 	}
 
 	// non-mean centered parameterisation 
@@ -220,6 +220,7 @@ model {
 }
 generated quantities {
 	real log_lik[N*K];
+	vector[N] log_lik2;
 	matrix[N,K] yrep;
 	if(me == 1){
 		yrep = to_matrix( normal_rng( to_vector(mu), Y_sd_v ), N, K );
@@ -232,6 +233,9 @@ generated quantities {
 			if(me == 1) log_lik[nk] = normal_lpdf( Y_v[nk] | to_vector(mu)[nk], Y_sd_v[nk] );
 			if(me == 0) log_lik[nk] = normal_lpdf( Y_v[nk] | to_vector(mu)[nk], me0_std );
 		}
+		matrix[N,K] Y = to_matrix(Y_v, N, K);
+		matrix[N,K] Y_sd = to_matrix(Y_sd_v, N, K);
+		for(n in 1:N) log_lik2[n] = multi_normal_prec_lpdf( Y[n,] | mu[n,], diag_matrix( 1 ./ to_vector( square(Y_sd[n,]) ) ) );
 	}
 }
 

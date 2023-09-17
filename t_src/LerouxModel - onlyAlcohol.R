@@ -47,13 +47,9 @@ map_sa2 <- st_read("C:/r_proj/ACAriskfactors/data/2016_SA2_Shape_min/2016_SA2_Sh
   right_join(.,global_obj$area_concor, by = "SA2") %>%
   right_join(.,census, by = "ps_area")
 
-# G matrix
-G <- t(model.matrix(~census$ra_sa2_3c - 1))
-
 # compile model
 unlink("t_src/stan/*.rds")
-#comp <- stan_model(file = "t_src/stan/GSCM_dynamicloading.stan")
-comp <- stan_model(file = "t_src/stan/GSCM_HPCversion.stan")
+comp <- stan_model(file = "t_src/stan/onlyAlcohol.stan")
 
 # scale data
 tt <- jf$scaleData(data, data_sd)
@@ -63,34 +59,14 @@ data_sd <- tt$data_sd %>% relocate(smoking, alcohol)
 # data list
 d <- list(# data
           N = nrow(data),
-          K = ncol(data),
-          R = 3,
-          G = G,
-          #Y = data,
-          Y_v = as.numeric(as.matrix(data)),
-          Y_sd_v = as.numeric(as.matrix(data_sd)),
-          #Y_sd = data_sd,
-          # model specification
-          L = 2,
-          shared_latent_rho_fixed = 1,
-          specific_latent_rho_fixed = 1,
-          kappa_fixed = 0.98,
-          latent_var_fixed = 1,
-          gamma_var_prior = 1,
-          me0_std = 0.01,
-          me = 1,
-          gamma_a = 2, 
-          gamma_b = 1
-          )
+          Y = data$alcohol,
+          Y_sd = 100*data_sd$alcohol)
 d <- c(d, for_stan, icar_for_stan)
 
 # fit model
 m_s <- Sys.time()
 fit <- sampling(object = comp, 
-                pars = c("Z_z", "mu", "Z_epsilon", "epsilon"),
-                include = FALSE,
                 data = d, 
-                init = 0, 
                 chains = 2,
                 control = list(adapt_delta = 0.95),
                 iter = 4000, warmup = 2000, 
@@ -100,15 +76,6 @@ fit <- sampling(object = comp,
 summ <- as.data.frame(summary(fit)$summary) %>% 
   rownames_to_column("parameter")
 100*mean(summ$Rhat > 1.01, na.rm = T)
-Lambda_point <- matrix(summ[str_detect(summ$parameter, "Lambda\\["),]$mean, byrow = T, ncol = d$L)
-Lambda_point %*% t(Lambda_point)
-
-data.frame(one = draws$Lambda[,1,3,1],
-           two = draws$Lambda[,2,3,1],
-           three = draws$Lambda[,3,3,1]) %>% 
-  pivot_longer(everything()) %>% 
-  ggplot(aes(x = value, col = name))+
-  geom_density()
 
 print(fit, pars = c("alpha", "Lambda", "sigma", "psi", 'rho', "kappa"))
 print(fit, pars = "Lambda")
@@ -119,17 +86,6 @@ draws <- rstan::extract(fit)
 latent <- apply(draws$z, c(2,3), median)
 
 # LOOCV
-log_lik <- extract_log_lik(fit, merge_chains=F)
-r_eff <- relative_eff(exp(log_lik))
-loo_out <- loo(log_lik, r_eff = r_eff)
-loo_out
-# ELPD - higher is better
-# L = 2, LCAR for both: 166.0 (11.4)
-# L = 2, LCAR for specific only: 149.3 (11.4)
-# L = 2, LCAR for shared only: 166.5 (11.3) - best convergence
-# L = 2, SDNORM for both: 134.4 (13.0)
-# L = 1, SDNORM for both: 132.6 (13.3)
-
 (loo_out1 <- rstan::loo(fit))
 loo_out2 <- rstan::loo(fit, moment_match = T)
 

@@ -111,7 +111,8 @@ jf$scaleData <- function(input_pt, input_sd){
     new_pt[[i]] <- (pt - mean(pt))/sd(pt)
     
     # rescale sd
-    new_sd[[i]] <- sqrt( sd^2 * (sd(pt)^(-2)) )
+    #new_sd[[i]] <- sqrt( sd^2 * (sd(pt)^(-2)) )
+    new_sd[[i]] <- sd/sd(pt)
   }
   
   names(new_pt) <- names(input_pt)

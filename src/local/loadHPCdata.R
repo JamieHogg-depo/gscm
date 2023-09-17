@@ -9,7 +9,9 @@ rm(list = ls())
 source("src/local/funs.R")
 
 # Set date
-cur_date <- "2023091"
+cur_date <- "202309171"
+# 202309173 is 24 combos with no scale and no latent fixed
+# 202309153 is 24 combos with scale and latent fixed
 
 # list files
 files <- list.files(paste0("Z:/gscm/outputs/", cur_date, "/r"), full.names = T)
@@ -24,18 +26,26 @@ grid <- bind_rows(lapply(1:length(out_all), FUN = function(x)out_all[[x]]$cur_mo
 
 # read performance data
 perf_ll <- lapply(1:length(out_all), FUN = function(x)out_all[[x]]$perf)
-perf <- bind_rows(perf_ll)
+perf <- bind_rows(perf_ll, .id = "ix")
 
 # read convergence data
 conv_ll <- lapply(1:length(out_all), FUN = function(x)out_all[[x]]$conv)
 conv <- bind_rows(conv_ll, .id = "ix")
 
 # Convergence plot
-out_all[[2]]$summ %>% 
+out_all[[15]]$summ %>% 
   ggplot(aes(y = rhat, x = variable_gr))+
   geom_boxplot()+
   geom_hline(yintercept = c(1,1.02))+
-  ylim(1,1.2)
+  ylim(1,2)
+
+# compare
+conv %>% 
+  filter(set == "all") %>% 
+  ggplot(aes(y = max_Rhat, x = latent_var_fixed, col = as.factor(scale_data)))+
+  geom_point()+
+  facet_grid(fo~as.factor(L))+
+  theme_bw()
 
 # Load specific large files
 out_full1 <- readRDS("Z:/gscm/outputs/20230904/r/ix1_model_GSCM__L_2__shared1_fitonly.rds")
