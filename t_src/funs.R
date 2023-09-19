@@ -420,3 +420,35 @@ return(list(W = W_working,
             group_membership = cc))
 
 }
+
+## ----------------------------------------------------------------------------
+#' @param name non-character for the variable that will be added
+#' @param concor logical (defaults to F). If using the function to create a separate
+# concordance dataset set to T, otherwise the function adds the column to the existing data.
+#' @param all_combs logical (defaults to T). Only applicable when concor = T. Setting to F
+# only generates an ID for the combinations in the given data.  
+# the dots are for the group variable
+jf$addGroupID <- function(.data, name, ..., concor = F, all_combs = T){
+  if(concor){
+    if(all_combs){
+      .data %>% 
+        dplyr::select(...) %>% 
+        filter(!duplicated(.)) %>% 
+        complete(...) %>%
+        group_by(...) %>% 
+        summarise("{{name}}" := cur_group_id(),
+                  .groups = "drop") %>%
+        filter(complete.cases(.))
+    }else{
+      .data %>% 
+        group_by(...) %>% 
+        summarise("{{name}}" := cur_group_id(),
+                  .groups = "drop")
+    }
+  }else{
+    .data %>% 
+      group_by(...) %>% 
+      mutate("{{name}}" := cur_group_id()) %>% 
+      ungroup() 
+  }
+}

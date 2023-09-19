@@ -19,18 +19,22 @@ foo <- function(x)cut_number(x, n = 100, labels = FALSE)
 
 # load global data
 global_obj <- readRDS("data/global_obj.rds")
-#out <- readRDS("data/y_mats_unc.rds")
-out <- readRDS("data/y_mats.rds")
+out <- readRDS("data/y_mats_unc.rds")
+#out <- readRDS("data/y_mats.rds")
 
 # all aussie
 W <- global_obj$W
-census <- global_obj$census
+census <- global_obj$census %>% 
+  jf$addGroupID(id, ABS_irsd_decile_nation_complete)
 data <- out$point[,-c(1:2)]
 data_sd <- out$sd[,-c(1:2)]
 
 # just state 1
 W <- global_obj$W[global_obj$census$ps_state == 1, global_obj$census$ps_state == 1]
-census <- global_obj$census %>% filter(ps_state == 1)
+census <- global_obj$census %>% 
+  filter(ps_state == 1) %>% 
+  jf$addGroupID(id, ABS_irsd_decile_nation_complete)
+  #jf$addGroupID(id, ra_sa2_3c, ABS_irsd_decile_nation_complete)
 data <- out$point[census$ps_area,-c(1:2)]
 data_sd <- out$sd[census$ps_area,-c(1:2)]
 
@@ -60,7 +64,9 @@ data_sd <- tt$data_sd %>% relocate(smoking, alcohol)
 d <- list(# data
           N = nrow(data),
           Y = data$alcohol,
-          Y_sd = 100*data_sd$alcohol)
+          Y_sd = data_sd$alcohol,
+          id = census$id,
+          N_id = length(unique(census$id)))
 d <- c(d, for_stan, icar_for_stan)
 
 # fit model
@@ -68,7 +74,7 @@ m_s <- Sys.time()
 fit <- sampling(object = comp, 
                 data = d, 
                 chains = 2,
-                control = list(adapt_delta = 0.95),
+                #control = list(adapt_delta = 0.95),
                 iter = 4000, warmup = 2000, 
                 cores = 2)
 (rt <- as.numeric(Sys.time() - m_s, units = "mins"))
@@ -77,9 +83,9 @@ summ <- as.data.frame(summary(fit)$summary) %>%
   rownames_to_column("parameter")
 100*mean(summ$Rhat > 1.01, na.rm = T)
 
-print(fit, pars = c("alpha", "Lambda", "sigma", "psi", 'rho', "kappa"))
-print(fit, pars = "Lambda")
-stan_trace(fit, pars = c("alpha", "Lambda", "sigma", "psi", 'rho', "kappa"))
+ppa <- c("psi", "rho", "alpha_sd")
+print(fit, pars = ppa)
+stan_trace(fit, pars = ppa)
 
 # get latent field
 draws <- rstan::extract(fit)

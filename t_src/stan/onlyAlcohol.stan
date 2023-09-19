@@ -66,6 +66,8 @@ data {
 	int<lower=1> N;                	// number of observations
 	vector[N] Y;				// vectorised data matrix of order [N,K] 
 	vector[N] Y_sd;				// vectorised standard deviations of Y
+	int id[N];
+	int N_id;
 
 // Spatial components for Leroux prior
 	vector[N] C_eigenvalues;
@@ -82,17 +84,31 @@ data {
 	int<lower=1, upper=N> node2[N_edges];
 }
 parameters {    
-	// shared
 	vector[N] z;								// standard normal latent factors
 	real<lower=0> psi;							//  vector of std
 	real<lower=0,upper=0.99> rho; 				// SA parameter for shared
+	vector[N_id] z_alpha;
+	real<lower=0> alpha_sd;
+}
+transformed parameters{
+	vector[N] mu;
+	vector[N_id] alpha = alpha_sd*z_alpha; 
+	for(n in 1:N){
+		mu[n] = z[n]*psi + alpha[id[n]];
+	}
 }
 model {
 	// variance priors
-	psi ~ gamma( 2,1 ); // gamma( 2, 1 ) -> 0.0047 of the density is below 0.1
+	//psi ~ gamma( 2,1 ); // gamma( 2, 1 ) -> 0.0047 of the density is below 0.1
+	// alpha_sd ~ gamma( 2,1 );
+	psi ~ std_normal(); 
+	alpha_sd ~ std_normal();
 	
 	// spatial autocorrelation priors
 	rho ~ uniform( 0, 0.99 ); 
+	
+	// varying intercepts
+	z_alpha ~ std_normal(); 
 	
 	// shared latent factors - unit scale
 	target += LCAR_lpdf( z | rho, 1, C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N ); 
@@ -100,14 +116,14 @@ model {
 	//target += student_t_lpdf( z | 2, 0, 1);
 	
 	// Likelihood - measurement error model
-	Y ~ normal( psi*z, Y_sd );
+	Y ~ normal( mu, Y_sd );
 }
 generated quantities {
 	real log_lik[N];
 	vector[N] yrep;
 	for (n in 1:N){
-		yrep[n] = normal_rng( psi*z[n], Y_sd[n] ); 
-		log_lik[n] = normal_lpdf( Y[n] | psi*z[n], Y_sd[n] );
+		yrep[n] = normal_rng( mu[n], Y_sd[n] ); 
+		log_lik[n] = normal_lpdf( Y[n] | mu[n], Y_sd[n] );
 	}
 }
 

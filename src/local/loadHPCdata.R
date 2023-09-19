@@ -9,7 +9,7 @@ rm(list = ls())
 source("src/local/funs.R")
 
 # Set date
-cur_date <- "202309171"
+cur_date <- "202309181"
 # 202309173 is 24 combos with no scale and no latent fixed
 # 202309153 is 24 combos with scale and latent fixed
 
@@ -42,10 +42,27 @@ out_all[[15]]$summ %>%
 # compare
 conv %>% 
   filter(set == "all") %>% 
-  ggplot(aes(y = max_Rhat, x = latent_var_fixed, col = as.factor(scale_data)))+
+  ggplot(aes(y = max_Rhat, x = gamma_var_prior, col = as.factor(specific_latent_rho_fixed)))+
   geom_point()+
-  facet_grid(fo~as.factor(L))+
+  facet_grid(.~as.factor(L))+
   theme_bw()
+
+# ELPD
+conv_ix <- (conv %>% 
+              filter(set == "all",
+                     n_Rhatgr1.05 == 0))$ix
+perf %>% 
+  filter(nu_div ==0,
+         nu_bfmi == 0, 
+         nu_tree ==0,
+         ix %in% conv_ix) %>% 
+  mutate(lower = elpd_loo - 1.96 * elpd_loo_se,
+         upper = elpd_loo + 1.96 * elpd_loo_se) %>% 
+  ggplot(aes(y = elpd_loo, ymin = lower, ymax = upper,
+             x = ix, col = as.factor(specific_latent_rho_fixed)))+
+  geom_errorbar()+
+  geom_point()+
+  facet_grid(.~L)
 
 # Load specific large files
 out_full1 <- readRDS("Z:/gscm/outputs/20230904/r/ix1_model_GSCM__L_2__shared1_fitonly.rds")
