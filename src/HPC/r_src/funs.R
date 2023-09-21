@@ -188,6 +188,53 @@ jf$getResultsData <- function(draws,
   return(r)
 }
 
+## ----------------------------------------------------------------------------
+# `draws_Lambda` must be iter x features x latents
+jf$getResultsFL <- function(draws_Lambda){
+
+  ll <- list()
+  ll$point <- apply(draws_Lambda, c(2,3), median)
+  ll$se <- apply(draws_Lambda, c(2,3), sd)
+  ll$lower <- apply(draws_Lambda, c(2,3), 
+                  FUN = function(x)unname(HDInterval::hdi(x)[1]))
+  ll$upper <- apply(draws_Lambda, c(2,3), 
+                    FUN = function(x)unname(HDInterval::hdi(x)[2]))
+  ll$RSE <- 100*(ll$se/abs(ll$point))
+  
+  # return list
+  return(ll)
+}
+
+## -----------------------------------------------------------------------------
+#' @param input_pt
+#' @param input_sd
+jf$scaleData <- function(input_pt, input_sd){
+  
+  new_pt <- list()
+  new_sd <- list()
+  
+  # for loop
+  for(i in 1:ncol(input_pt)){
+    
+    # subset
+    pt <- unlist(input_pt[,i])
+    sd <- unlist(input_sd[,i])
+    
+    # rescale pt
+    new_pt[[i]] <- (pt - mean(pt))/sd(pt)
+    
+    # rescale sd
+    new_sd[[i]] <- sqrt( sd^2 * (sd(pt)^(-2)) )
+  }
+  
+  names(new_pt) <- names(input_pt)
+  names(new_sd) <- names(input_sd)
+  
+  # return
+  return(list(data = bind_cols(new_pt),
+              data_sd = bind_cols(new_sd)))
+}
+
 ## -----------------------------------------------------------------------------
 #' @param summary summary list object from nimble or CB run (`fit$summary`)
 #' @param regex character expression for the param subset. For vector parameters
@@ -209,7 +256,9 @@ jf$getSubsetConvergence <- function(summary, regex, set){
   out <- data.frame(set = set,
                     n_params = nrow(summ),
                     perc_Rhatgr1.02 = 100*mean(summ$rhat > 1.02, na.rm = T),
-                    max_Rhat = max(summ$rhat, na.rm = T),
+					n_Rhatgr1.02 = sum(summ$rhat > 1.02, na.rm = T),
+					n_Rhatgr1.05 = sum(summ$rhat > 1.05, na.rm = T),
+					max_Rhat = max(summ$rhat, na.rm = T),
                     perc_ebbelow400 = 100*mean(summ$ess_bulk < 400, na.rm = T),
                     perc_etbelow400 = 100*mean(summ$ess_tail < 400, na.rm = T),
                     min_essbulk = min(summ$ess_bulk, na.rm = T),

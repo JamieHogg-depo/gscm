@@ -59,6 +59,36 @@ real ICAR_lpdf(vector x, int N, int[] node1, int[] node2) {
   return -0.5 * dot_self(x[node1] - x[node2]) 
   + normal_lpdf(sum(x) | 0, 0.001 * N);
 }
+/**
+* Create constrained factor loading matrix
+* @param K number of input features
+* @param L number of latent factors
+* @param Lambda_d diagonal elements of Lambda
+* @param Lambda_ld lower diagonal elements of Lambda
+* @param latent_var_fixed whether diagonals should be 1 or just positive
+*/
+matrix FL(int K, int L, vector Lambda_d, vector Lambda_ld, int latent_var_fixed){
+	matrix[K,L] Lambda;
+	int idx1 = 0;
+	int idx2 = 0; 
+	real zero; 
+	zero = 0;
+	for(i in 1:K){
+		for(j in (i+1):L){
+		  idx1 = idx1 + 1;
+		  Lambda[i,j] = zero; 			// constrain the upper triangular elements to zero 
+		}
+	}
+	for (j in 1:L) {
+		if(latent_var_fixed == 1) Lambda[j,j] = Lambda_d[j];
+		if(latent_var_fixed == 0) Lambda[j,j] = 1.0; 				// constrain the diagonal elements to zero
+		for (i in (j+1):K) {
+		  idx2 = idx2 + 1;
+		  Lambda[i,j] = Lambda_ld[idx2];
+		} 
+	}
+	return Lambda;
+}
 }
 
 data {
@@ -73,6 +103,9 @@ data {
 	int gamma_var_prior; 			// 1: use gamma priors, 0: normal prior
 	real<lower=0> gamma_a;			// a parameter for gamma priors on std
 	real<lower=0> gamma_b;			// b parameter for gamma priors on std
+	int latent_var_fixed; 			// If 1 then variance of latent factors is 1
+	int beta_sa_prior; 				// 1: use beta priors, 0: uniform prior
+	int scale_data;					// If 1 then input data is mean zero and alpha is dropped
 
 // Spatial components for Leroux prior
 	vector[N] C_eigenvalues;
@@ -102,6 +135,8 @@ parameters {
 	
 	// Loading matrix
 	vector[M] Lambda_ld;   						// lower diagonal elements of Lambda
+	vector<lower=0>[L] Lambda_d;   				// diagonal elements of Lambda
+
 	
 	// shared
 	matrix[N,L] Z_z;							// standard normal latent factors
@@ -109,46 +144,32 @@ parameters {
 	vector<lower=0,upper=0.99>[L] rho; 			// SA parameter for shared
 }
 transformed parameters{
-	cholesky_factor_cov[K,L] Lambda;  	// factor loadings matrix 
 	matrix[N,L] z;   					// shared latent factors
 	matrix[N, K] mu;					// mean vector
-	{
-	int idx1 = 0;
-	int idx2 = 0; 
-	real zero; 
-	zero = 0;
-	for(i in 1:K){
-		for(j in (i+1):L){
-		  idx1 = idx1 + 1;
-		  Lambda[i,j] = zero; 			// constrain the upper triangular elements to zero 
-		}
-	}
-	for (j in 1:L) {
-		Lambda[j,j] = 1.0; 			// constrain the diagonal elements to zero 
-		for (i in (j+1):K) {
-		  idx2 = idx2 + 1;
-		  Lambda[i,j] = Lambda_ld[idx2];
-		} 
-	}
-	}
+	
+	// factor loadings matrix
+	cholesky_factor_cov[K,L] Lambda = FL(K, L, Lambda_d, Lambda_ld, latent_var_fixed); 
 
 	// non-mean centered parameterisation 
 	// for shared latent factors
-	//if(L == 1){
-	//	z[,1] = Z_z[,1]; // L = 1 set latent variance to 1
-	//}
-	//else{
+	if(latent_var_fixed == 1){
+		for(l in 1:L) z[,l] = Z_z[,l]; // set latent variance to 1
+	}
+	else{
 		for(l in 1:L) z[,l] = Z_z[,l] * psi[l];
-	//}
+	}
 	
+	// Mean vector
 	for(k in 1:K){
 		// mean vector
-		mu[,k] = alpha[k] + z*Lambda[k,]';
+		if(scale_data == 1) mu[,k] = z*Lambda[k,]';
+		if(scale_data == 0) mu[,k] = alpha[k] + z*Lambda[k,]';
 	}
 }
 model {
 	// generic priors
 	Lambda_ld ~ std_normal();
+	Lambda_d ~ std_normal();
 	alpha ~ std_normal();
 	
 	// variance priors
@@ -162,7 +183,8 @@ model {
 	}
 	
 	// spatial autocorrelation priors
-	rho ~ uniform( 0, 0.99 ); 
+	if(beta_sa_prior == 1) rho ~ beta(6,2);
+	if(beta_sa_prior == 0) rho ~ uniform( 0, 0.99 ); 
 	
 	// shared latent factors - unit scale
 	for(l in 1:L){
@@ -170,7 +192,7 @@ model {
 			target += ICAR_lpdf( Z_z[,l] | N, node1, node2 ); 
 		else if(shared_latent_rho_fixed == 0){
 			target += std_normal_lpdf( Z_z[,l] ); 
-			target += normal_lpdf( sum(Z_z[,l]) | 0, 0.001 * N ); // new addition
+			//target += normal_lpdf( sum(Z_z[,l]) | 0, 0.001 * N ); // new addition
 		}
 		else{
 			target += LCAR_lpdf( Z_z[,l] | rho[l], 1, C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N ); 
@@ -188,6 +210,7 @@ model {
 generated quantities {
 	vector[N*K] log_lik;
 	matrix[N,K] yrep;
+	matrix[N,K] epsilon = Y - mu;
 	{
 		matrix[N,K] log_lik2;
 		for(n in 1:N){

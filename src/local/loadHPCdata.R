@@ -9,7 +9,7 @@ rm(list = ls())
 source("src/local/funs.R")
 
 # Set date
-cur_date <- "202309181"
+cur_date <- "202309211"
 # 202309173 is 24 combos with no scale and no latent fixed
 # 202309153 is 24 combos with scale and latent fixed
 
@@ -33,11 +33,11 @@ conv_ll <- lapply(1:length(out_all), FUN = function(x)out_all[[x]]$conv)
 conv <- bind_rows(conv_ll, .id = "ix")
 
 # Convergence plot
-out_all[[15]]$summ %>% 
+out_all[[1]]$summ %>% 
   ggplot(aes(y = rhat, x = variable_gr))+
   geom_boxplot()+
   geom_hline(yintercept = c(1,1.02))+
-  ylim(1,2)
+  ylim(1,1.2)
 
 # compare
 conv %>% 
@@ -53,9 +53,9 @@ conv_ix <- (conv %>%
                      n_Rhatgr1.05 == 0))$ix
 perf %>% 
   filter(nu_div ==0,
-         nu_bfmi == 0, 
-         nu_tree ==0,
-         ix %in% conv_ix) %>% 
+         nu_bfmi == 0,
+         ix %in% conv_ix, 
+         nu_tree ==0) %>% 
   mutate(lower = elpd_loo - 1.96 * elpd_loo_se,
          upper = elpd_loo + 1.96 * elpd_loo_se) %>% 
   ggplot(aes(y = elpd_loo, ymin = lower, ymax = upper,

@@ -7,7 +7,7 @@ worst_rhats <- ll_out$summ %>% filter(!str_detect(variable, "log_lik\\[|yrep\\[|
 ll_out$trace$worst <- stan_trace(ll_out$fit, pars = worst_rhats$variable)
 
 # lambda
-ll_out$Lambda_point <- matrix(ll_out$summ[str_detect(ll_out$summ$variable, "Lambda\\["),]$mean, 
+ll_out$Lambda_point <- matrix(ll_out$summ[str_detect(ll_out$summ$variable, "Lambda\\["),]$median, 
                               byrow = F, ncol = d$L)
 
 # Add cur model spec
@@ -17,12 +17,15 @@ ll_out$cur_model_spec <- ll_out$cur_model_spec %>% mutate(model = which_m) %>% r
 ll_out$data$y <- rf_data
 ll_out$data$y_sd <- rf_data_sd
 ll_out$data$W <- W
+ll_out$data$map <- map_temp
+ll_out$data$census <- census
 
 # NUTS diagnostics
 diag_list <- list()
 diag_list$nu_div <- get_num_divergent(ll_out$fit)
 diag_list$nu_tree <- get_num_max_treedepth(ll_out$fit)
-diag_list$bfmi <- length(which(rstan::get_bfmi(ll_out$fit) < 0.2))
+diag_list$bfmi <- paste0(round(rstan::get_bfmi(ll_out$fit),2), collapse = ", ")   
+diag_list$nu_bfmi <- length(which(rstan::get_bfmi(ll_out$fit) < 0.3))
 
 # Convergence
 ll_out$conv <- bind_rows(jf$getSubsetConvergence(ll_out$summ, "-log_lik\\[|yrep\\[|epsilon\\[", "all except"),
@@ -37,6 +40,9 @@ ll_out$conv <- bind_rows(jf$getSubsetConvergence(ll_out$summ, "-log_lik\\[|yrep\
 draws <- rstan::extract(ll_out$fit)
 # get latent field
 ll_out$latent_draws <- draws$z
+
+# summarise fitted values
+# ll_out$mu_point <- apply(draws$mu, c(2,3), median)
 
 # summarise residuals
 summ_epsilon <- apply(draws$epsilon, c(2,3), median)
@@ -53,9 +59,11 @@ foo <- function(x){
 	  NULL
 	}
 }
-ll_out$summ_hp <- bind_rows(lapply(c("sigma", "Lambda_ld", "psi", "rho", "kappa"), foo))
+ll_out$summ_hp <- bind_rows(lapply(c("sigma", "psi", "rho", "kappa"), foo))
 rm(foo)
 
+# Summary of loadings
+ll_out$summ_loadings <- jf$getResultsFL(draws$Lambda)
 
 # Summarise latent field
 summ <- list()
@@ -73,15 +81,21 @@ if(ll_out$cur_model_spec$L > 1){
 	ll_out$summ_latent2 <- summ
 }
 
+# Exceedance probabilities
+ll_out$EP <- apply(draws$z>0, c(2,3), mean)
+
 # LOOCV
-log_lik <- extract_log_lik(ll_out$fit, merge_chains=F)
-r_eff <- relative_eff(exp(log_lik))
-ll_out$loo <- loo(log_lik, r_eff = r_eff)
+ll_out$loo <- rstan::loo(ll_out$fit)
+
+# LOOCV with moment matching
+#ll_out$loo2_mm <- try(rstan::loo(ll_out$fit, moment_match = TRUE, cores = 1))
 
 # Performance and comparison
 ll_out$perf <- cbind(ll_out$cur_model_spec, 
 					 as.data.frame(diag_list),
-					 data.frame(elpd_loo = as.numeric(ll_out$loo$estimates[1,1]), 
+					 data.frame(lpd = sum(log(apply(exp(draws$log_lik),2,mean))), # Formula 3 in Aki
+								lpd_sd = sd(log(apply(exp(draws$log_lik),2,mean))),
+								elpd_loo = as.numeric(ll_out$loo$estimates[1,1]), 
 					            elpd_loo_se = as.numeric(ll_out$loo$estimates[1,2]),
 								perc_lookgr1 = 100*mean(ll_out$loo$diagnostics$pareto_k > 1),
 								perc_lookgr07 = 100*mean(ll_out$loo$diagnostics$pareto_k > 0.7),
@@ -99,15 +113,15 @@ ll_out$ppc <- ppc_list
 cc = str_remove_all(paste0(paste0(names(ll_out$cur_model_spec)[1:3], "_", ll_out$cur_model_spec[1,1:3]), collapse = "__"), "_latent_rho_fixed_")
 
 # Save output - stan fit object only
-saveRDS(ll_out$fit, paste0(base_folder, "/outputs/", cur_date, "/r/ix", grid_ix, "_", cc, "_fitonly.rds"))
+#saveRDS(ll_out$fit, paste0(base_folder, "/outputs/", cur_date, "/r/ix", grid_ix, "_", cc, "_fitonly.rds"))
 
 # Save output - full
 ll_out$fit <- NULL
-saveRDS(ll_out, paste0(base_folder, "/outputs/", cur_date, "/r/ix", grid_ix, "_", cc, "_f.rds"))
+#saveRDS(ll_out, paste0(base_folder, "/outputs/", cur_date, "/r/ix", grid_ix, "_", cc, "_f.rds"))
 
 # Save output
 ll_out$latent_draws <- NULL
-#ll_out$trace_pl <- NULL
+ll_out$trace <- NULL
 ll_out$ppc <- NULL
 saveRDS(ll_out, paste0(base_folder, "/outputs/", cur_date, "/r/ix", grid_ix, "_", cc, ".rds"))
 

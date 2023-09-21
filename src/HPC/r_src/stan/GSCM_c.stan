@@ -104,13 +104,12 @@ data {
 	int specific_latent_rho_fixed;	// rho = 0: stand norm, rho = 1: ICAR
 	real<lower=0> me0_std; 			// standard deviation of likelihood when me = 0
 	int me;							// me = 1: including Y_sd, me = 0: use me0_std
-	int beta_sa_prior; 				// 1: use beta priors, 0: uniform prior
 	int gamma_var_prior; 			// 1: use gamma priors, 0: normal prior
 	real<lower=0> gamma_a;			// a parameter for gamma priors on std
 	real<lower=0> gamma_b;			// b parameter for gamma priors on std
 	int latent_var_fixed; 			// If 1 then variance of latent factors is 1
 	int scale_data;					// If 1 then input data is mean zero and alpha is dropped
-	vector[K] sp_ind;				// vector that includes or excludes specific-random effects
+	int meas_dist; 					// If 1 then the measurement error uncertainty is modelled
 
 // Spatial components for Leroux prior
 	vector[N] C_eigenvalues;
@@ -138,7 +137,7 @@ parameters {
 	//vector<lower=0>[N*K] chi_draw;
 	
 	// feature-specific
-	matrix[N,K] Z_epsilon;						// standard normal latent factors
+	matrix[N,K] epsilon;						// standard normal latent factors
 	vector<lower=0>[K] sigma; 					// vector of std
 	vector<lower=0,upper=0.99>[K] kappa;		// SA parameter for feature-specific
 	
@@ -153,7 +152,6 @@ parameters {
 }
 transformed parameters{
 	matrix[N,L] z;   							// shared latent factors
-	matrix[N,K] epsilon;   			  			// feature-specific latent factors
 	matrix[N, K] mu;							// mean vector
 	
 	// factor loadings matrix
@@ -174,12 +172,23 @@ transformed parameters{
 	// non-mean centered parameterisation 
 	// for feature-specific factors
 	for(k in 1:K){
-		// non-mean centered parameterisation
-		// for feature-specific latent factors
-		epsilon[,k] = sp_ind[k] * Z_epsilon[,k] * sigma[k];
 		// mean vector
-		if(scale_data == 1) mu[,k] = z*Lambda[k,]' + epsilon[,k];
-		if(scale_data == 0) mu[,k] = alpha[k] + z*Lambda[k,]' + epsilon[,k];
+		if(shared_latent_rho_fixed == 1){
+			if(scale_data == 1){
+				mu[,k] = z*Lambda[k,]' + sigma[k] * epsilon[,k];
+			}
+			if(scale_data == 0){
+				mu[,k] = alpha[k] + z*Lambda[k,]' + sigma[k] * epsilon[,k];
+			}
+		}
+		if(shared_latent_rho_fixed != 1){
+			if(scale_data == 1){
+				mu[,k] = z*Lambda[k,]' + epsilon[,k];
+			}
+			if(scale_data == 0){
+				mu[,k] = alpha[k] + z*Lambda[k,]' + epsilon[,k];
+			}
+		}
 	}
 }
 model {
@@ -191,8 +200,8 @@ model {
 	
 	// variance priors
 	if(gamma_var_prior == 1){
-		sigma ~ gamma( gamma_a, gamma_b ); // gamma( 2, 1 ) -> 0.0047 of the density is below 0.1 -> 0.74 above 1
-		psi ~ gamma( gamma_a, gamma_b );	// gamma( 2,3 ) -> 0.037 of the density is below 0.1 -> 0.2 above 1
+		sigma ~ gamma( gamma_a, gamma_b ); // gamma( 2, 1 ) -> 0.0047 of the density is below 0.1
+		psi ~ gamma( gamma_a, gamma_b );
 	}
 	if(gamma_var_prior == 0){
 		sigma ~ std_normal();
@@ -200,14 +209,8 @@ model {
 	}
 	
 	// spatial autocorrelation priors
-	if(beta_sa_prior == 1){
-		rho ~ beta(6,2); // 0.9375 of density above 0.5
-		kappa ~ beta(6,2);
-	}
-	if(beta_sa_prior == 0){
-		rho ~ uniform( 0, 0.99 ); 
-		kappa ~ uniform( 0, 0.99 );
-	}
+	rho ~ uniform( 0, 0.99 ); 
+	kappa ~ uniform( 0, 0.99 );
 	
 	// shared latent factors - unit scale
 	for(l in 1:L){
@@ -225,23 +228,28 @@ model {
 	// feature specific latent factors - unit scale
 	for(k in 1:K){
 		if(specific_latent_rho_fixed == 1)
-			target += ICAR_lpdf( Z_epsilon[,k] | N, node1, node2 ); 
+			target += ICAR_lpdf( epsilon[,k] | N, node1, node2 ); 
 		else if(specific_latent_rho_fixed == 0){
-			target += std_normal_lpdf( Z_epsilon[,k] ); 
+			target += normal_lpdf( epsilon[,k] | 0, sigma[k] ); 
 		}
 		else if(specific_latent_rho_fixed == 2){
-			target += LCAR_lpdf( Z_epsilon[,k] | kappa[k], 1, C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N );
-			target += normal_lpdf( sum(Z_epsilon[,k]) | 0, 0.001 * N );
+			target += LCAR_lpdf( epsilon[,k] | kappa[k], sigma[k], C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N );
+			target += normal_lpdf( sum(epsilon[,k]) | 0, 0.001 * N );
 		}
 		else{
-			target += LCAR_lpdf( Z_epsilon[,k] | kappa_fixed[k], 1, C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N );
-			target += normal_lpdf( sum(Z_epsilon[,k]) | 0, 0.001 * N );
+			target += LCAR_lpdf( epsilon[,k] | kappa_fixed[k], sigma[k], C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N );
+			target += normal_lpdf( sum(epsilon[,k]) | 0, 0.001 * N );
 		}
 	}
 	
 	// Likelihood - measurement error model
 	if(me == 1){
-		Y_v ~ normal( to_vector(mu), Y_sd_v );
+/* 		if(meas_dist == 1){
+			Y_v ~ normal( to_vector(mu), d_sd );
+		}  */
+		if(meas_dist == 0){
+			Y_v ~ normal( to_vector(mu), Y_sd_v );
+		}
 	}
 	if(me == 0){
 		Y_v ~ normal( to_vector(mu), me0_std );

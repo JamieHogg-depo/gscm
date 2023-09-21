@@ -6,11 +6,12 @@ which_m='GSCM'
 all_aus=1
 
 # Model
-for grid_ix in 1 2 #{1..12}
+for grid_ix in {1..16}
 do
 
 	# get the current date
-	cur_date=$(date +%Y%m%d)
+	cr_date=$(date +%Y%m%d)
+	cur_date=$cr_date'1'
 
 	# create directories
 	mkdir -p $base_folder/sub_src/$cur_date
@@ -26,9 +27,9 @@ do
 	cat > $base_folder/sub_src/$cur_date/$file <<EOF
 #!/bin/bash -l
 #PBS -N $specs
-#PBS -l ncpus=2
-#PBS -l mem=50GB
-#PBS -l walltime=48:00:00
+#PBS -l ncpus=4
+#PBS -l mem=100GB
+#PBS -l walltime=24:00:00
 #PBS -e $base_folder/outputs/$cur_date/lyra_errors/$specs
 #PBS -o $base_folder/outputs/$cur_date/lyra_out/$specs
 
@@ -41,7 +42,7 @@ grid_ix=$grid_ix;
 cur_date=$cur_date;
 which_m='$which_m';
 all_aus=($all_aus == 1);
-source(paste0(base_folder, '/ms.R'));"
+source(paste0(base_folder, '/ms_gscm.R'));"
 EOF
 
 	# run each script

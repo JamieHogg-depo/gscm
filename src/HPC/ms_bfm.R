@@ -17,10 +17,10 @@
 	source(paste0(base_folder, "/r_src/funs.R"))
 	
 # Set Stan settings
-	chains = 2
-	iter = 6000 
-	warmup = 3000
-	thin = 3
+	chains = 4
+	iter = 5000 
+	warmup = 4000
+	thin = 4
 
 # Load data
 
@@ -62,15 +62,20 @@ for_stan <- jf$prep4MLCAR(W)
 icar_for_stan <- jf$prep4ICAR(W)
 
 # Define grid of values
-grid <- expand.grid(L = 2, #c(1,2),
-                    shared_latent_rho_fixed = 1, #c(0,1,2),
-                    specific_latent_rho_fixed = 1, #c(0,1,2),
-                    gamma_var_prior = c(0,1),
+grid <- expand.grid(L = 1,
+                    shared_latent_rho_fixed = 2,
+                    specific_latent_rho_fixed = 0, #c(0,1,2),
+					kappa_fixed = 0.9,
+                    gamma_var_prior = 1,
+					beta_sa_prior = 1,
                     me0_std = 0.01,
+					meas_dist = 0, 
                     me = 1,
                     gamma_a = 2,
-                    gamma_b = 1,
-					fo = c("smoking__alcohol"))#, "activityleiswkpl__alcohol", "diet__alcohol"))
+                    gamma_b = 3,
+					latent_var_fixed = 1, #c(0,1),
+					scale_data = 1, #c(0,1),
+					fo = "smoking__alcohol")
 grid2 <- data.frame(L = c(1,2,2),
                    shared_latent_rho_fixed = c(0,0,2),
                    specific_latent_rho_fixed = 0,
@@ -79,6 +84,8 @@ grid2 <- data.frame(L = c(1,2,2),
                    me = c(0,0,0),
                    gamma_a = 2,
                    gamma_b = 1,
+				   latent_var_fixed = 1, 
+				   scale_data = 1,
 				   fo = "activityleiswkpl__alcohol")
 cur_model_spec <- grid[grid_ix,]
 
@@ -91,9 +98,48 @@ rf_data_sd <- rf_data_sd %>% relocate(feat_order)
 ll_out <- list()
 ll_out$cur_model_spec = cur_model_spec
 
-# Run models
-if(which_m == "BFM") source(paste0(base_folder, "/r_src/BFM.R"))
-if(which_m == "GSCM") source(paste0(base_folder, "/r_src/GSCM.R"))
+# compile model
+unlink(paste0(base_folder, "/r_src/stan/*.rds"))
+comp <- stan_model(file = paste0(base_folder, "/r_src/stan/BFM.stan"))
+
+# Scale data
+if(cur_model_spec$scale_data == 1){
+	tt <- jf$scaleData(rf_data, rf_data_sd)
+	rf_data <- tt$data
+	rf_data_sd <- tt$data_sd
+	rm(tt)
+}
+
+# data list
+d <- list(N = nrow(rf_data), 
+          K = ncol(rf_data),
+          Y = rf_data)
+d <- c(d, for_stan, icar_for_stan, cur_model_spec)
+
+# fit model
+m_s <- Sys.time()
+ll_out$fit <- sampling(object = comp, 
+                #pars = c("Z_z", "mu"),
+				pars = "mu",
+                include = FALSE,
+                data = d, 
+                init = 0,
+				#refresh = 0, 				
+                chains = chains,
+                control = list(adapt_delta = 0.95,
+								max_treedepth = 12),
+                iter = iter, warmup = warmup,
+				thin = thin,
+                cores = chains)
+(ll_out$rt <- as.numeric(Sys.time() - m_s, units = "mins"))
+
+# Summarise draws
+ll_out$summ <- summarise_draws(ll_out$fit) %>% 
+  mutate(variable_gr = str_extract(variable, "^[^\\[]+")) %>% 
+  relocate(variable_gr)
+  
+# trace plots
+ll_out$trace$hyperparams <- stan_trace(ll_out$fit, pars = c("alpha", "Lambda_ld", "sigma", "psi", "rho"))
 
 # Summarise models
 source(paste0(base_folder, "/r_src/summ.R"))
