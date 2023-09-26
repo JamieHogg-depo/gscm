@@ -62,3 +62,14 @@ lims <- data.frame(
                  "C - Canberra (ACT)", "D - Darwin (NT)")
 ) %>% 
   mutate(initials = str_sub(city, 1, 1))
+
+# lookup function
+JHCW <- function(this){
+  case_when(
+    {{ this }} == "smoking" ~  "Current\nSmoking",
+    {{ this }} == "activityleiswkpl" ~ 'Inadequate\nphysical\nactivity',
+    {{ this }} == "diet" ~ "Inadequate\ndiet",
+    {{ this }} == "alcohol" ~ "Risky\nalcohol\nconsumption",
+    {{ this }} == "overweight" ~ "Overweight/\nobese",
+  )
+}
