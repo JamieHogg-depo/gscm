@@ -84,7 +84,7 @@ data_sd %>%
 # Hyperpriors
 foo <- function(x){
 out_all[[x]]$summ_hp %>% 
-  filter(!str_detect(variable, "Lambda")) %>% 
+  filter(!str_detect(variable, "Lambda|psi")) %>% 
   mutate(sum = getSumColumn(point, lower, upper, 2)) %>% 
   dplyr::select(variable, sum) %>% 
   pivot_wider(names_from = variable, values_from = sum) %>% 
@@ -98,8 +98,12 @@ rm(foo)
 foo <- function(x){
 out_all[[x]]$perf %>% 
   mutate(loo = getLooColumn(elpd_loo, elpd_loo_se, 1),
+         WAIC2 = getLooColumn(WAIC, WAIC_se, 1),
+         WAIC = round(WAIC),
+         DIC = round(DIC),
+         MAB = round(MAB, 3),
          model_spec = getModelSpecs(out_all[[x]]$cur_model_spec)) %>% 
-  dplyr::select(model_spec, loo)
+  dplyr::select(model_spec, DIC, WAIC, MAB)
 }
 modelfit_table <- bind_rows(lapply(1:length(out_all), foo))
 rm(foo)
