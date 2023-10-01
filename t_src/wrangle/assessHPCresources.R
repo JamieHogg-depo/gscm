@@ -1,5 +1,5 @@
 
-dt <- "202309283"
+dt <- "202310011"
 ff <- list.files(paste0("Z:/gscm/outputs/", dt, "/lyra_out"), full.names = T)
 ll <- list()
 for(i in 1:length(ff)){

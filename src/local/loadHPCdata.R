@@ -10,7 +10,7 @@ gc()
 source("src/local/funs.R")
 
 # Set date
-cur_date <- c("202309291")
+cur_date <- c("202310011")
 # 202309173 is 24 combos with no scale and no latent fixed
 # 202309153 is 24 combos with scale and latent fixed
 
@@ -40,8 +40,9 @@ conv_ix <- (conv %>%
                      set == "all"))$ix
 perf %>% 
   filter(nu_div ==0,
+         ix %in% conv_ix,
          nu_bfmi == 0) %>% 
-  mutate(conv_flag = ix %in% conv_ix) %>% 
+  #mutate(conv_flag = ix %in% conv_ix) %>% 
   view()
 ## ---- ##
 

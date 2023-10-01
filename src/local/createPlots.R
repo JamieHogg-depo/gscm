@@ -110,7 +110,7 @@ rm(data2)
 
 ## Correlation plot - observed data with latent factors ## ---------------------
 
-chose_ix <- 11
+chose_ix <- 13
 
 # rename columns of data
 data2 <- data %>% 
@@ -121,7 +121,7 @@ data2 <- data %>%
          "Overweight/\nobese" = overweight) %>% 
   mutate(`Factor 1` = out_all[[chose_ix]]$summ_latent1$raww$point,
          `Factor 2` = out_all[[chose_ix]]$summ_latent2$raww$point,
-         `Combined` = out_all[[chose_ix]]$summ_latent1$raww$point + out_all[[chose_ix]]$summ_latent2$raww$point)
+         `Combined` = out_all[[chose_ix]]$summ_latentcomb$raww$point)
 
 res <- cor(data2)
 ggcorrplot::ggcorrplot(res, #hc.order = TRUE,
