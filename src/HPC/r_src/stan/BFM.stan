@@ -95,6 +95,7 @@ data {
 // data
 	int<lower=1> N;                	// number of observations
 	int<lower=1> K;                	// number of features
+	int<lower=1> M;					// number of lower diagonal values in Lambda
 	matrix[N,K] Y;					// data matrix of order [N,K] 
 
 // model specification
@@ -120,11 +121,6 @@ data {
 	int<lower=0> N_edges;
 	int<lower=1, upper=N> node1[N_edges]; 
 	int<lower=1, upper=N> node2[N_edges];
-}
-transformed data {
-// number of non-zero entries
-	int<lower=1> M;       
-	M = L*(K-L)+ L*(L-1)/2;   
 }
 parameters {    
 	// mean vector
@@ -168,23 +164,23 @@ transformed parameters{
 }
 model {
 	// generic priors
-	Lambda_ld ~ std_normal();
-	Lambda_d ~ std_normal();
-	alpha ~ std_normal();
+	target += std_normal_lpdf(Lambda_ld);
+	target += std_normal_lpdf(Lambda_d);
+	target += std_normal_lpdf(alpha);
 	
 	// variance priors
 	if(gamma_var_prior == 1){
-		sigma ~ gamma( gamma_a, gamma_b ); // gamma( 2, 1 ) -> 0.0047 of the density is below 0.1
-		psi ~ gamma( gamma_a, gamma_b );
+		target += gamma_lpdf( sigma | gamma_a, gamma_b ); // gamma( 2, 1 ) -> 0.0047 of the density is below 0.1
+		target += gamma_lpdf( psi | gamma_a, gamma_b );
 	}
 	if(gamma_var_prior == 0){
-		sigma ~ std_normal();
-		psi ~ std_normal();
+		target += std_normal_lpdf(sigma);
+		target += std_normal_lpdf(psi);
 	}
 	
 	// spatial autocorrelation priors
-	if(beta_sa_prior == 1) rho ~ beta(6,2);
-	if(beta_sa_prior == 0) rho ~ uniform( 0, 0.99 ); 
+	if(beta_sa_prior == 1) target += beta_lpdf( rho | 6,2);
+	if(beta_sa_prior == 0) target += uniform_lpdf( rho | 0, 0.99 ); 
 	
 	// shared latent factors - unit scale
 	for(l in 1:L){
@@ -201,10 +197,8 @@ model {
 	}
 	
 	// Likelihood - measurement error model
-	for(n in 1:N){
-		for(k in 1:K){
-			Y[n,k] ~ normal( mu[n,k], sigma[k] ); 	
-		}
+	for(k in 1:K){
+		target += normal_lpdf( Y[,k] | mu[,k], sigma[k] ); 	
 	}
 }
 generated quantities {

@@ -6,7 +6,7 @@ which_m='GSCM'
 all_aus=1
 
 # Model
-for grid_ix in {1..16}
+for grid_ix in 5 #{1..18}
 do
 
 	# get the current date
@@ -28,8 +28,8 @@ do
 #!/bin/bash -l
 #PBS -N $specs
 #PBS -l ncpus=4
-#PBS -l mem=100GB
-#PBS -l walltime=24:00:00
+#PBS -l mem=40GB
+#PBS -l walltime=30:00:00
 #PBS -e $base_folder/outputs/$cur_date/lyra_errors/$specs
 #PBS -o $base_folder/outputs/$cur_date/lyra_out/$specs
 

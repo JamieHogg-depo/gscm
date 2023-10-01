@@ -3,7 +3,7 @@
 ####
 
 # trace plots
-worst_rhats <- ll_out$summ %>% filter(!str_detect(variable, "log_lik\\[|yrep\\[|epsilon\\[")) %>% arrange(desc(rhat)) %>% head(10)
+worst_rhats <- ll_out$summ %>% filter(!str_detect(variable, "log_lik\\[|yrep\\[|epsilon\\[")) %>% arrange(desc(rhat)) %>% head(5)
 ll_out$trace$worst <- stan_trace(ll_out$fit, pars = worst_rhats$variable)
 
 # lambda
@@ -41,11 +41,23 @@ draws <- rstan::extract(ll_out$fit)
 # get latent field
 ll_out$latent_draws <- draws$z
 
-# summarise fitted values
-# ll_out$mu_point <- apply(draws$mu, c(2,3), median)
-
 # summarise residuals
 summ_epsilon <- apply(draws$epsilon, c(2,3), median)
+
+# summarise fitted values
+ll_out$summ_mu_mean <- apply(draws$mu, c(2,3), mean)
+
+# deviance
+ll_out$dev$Dbar <- mean( -2*apply(draws$log_lik, 1, sum) )
+ll_out$dev$Dhat <- -2*sum( dnorm(x = as.numeric(unlist(rf_data)), 
+                      mean = as.numeric(unlist(ll_out$summ_mu_mean)), 
+                      sd = as.numeric(unlist(rf_data_sd)), log = TRUE) )
+ll_out$dev$pD <- ll_out$dev$Dbar - ll_out$dev$Dhat
+ll_out$dev$DIC <- ll_out$dev$Dbar + ll_out$dev$pD
+
+# MAB
+ll_out$MAB <- mean(unlist(abs(rf_data - ll_out$summ_mu_mean)))
+
 # Moran test of residuals
 ll_out$moran_pvalues <- unlist(lapply(1:5, FUN = function(x)moran.mc(summ_epsilon[,x], listw = listw, nsim = 999)$p.value))
 
@@ -73,12 +85,23 @@ summ$perc <- jf$getResultsData(t(apply(draws$z[,,1], 1, ggplot2::cut_number, n =
 summ$rankk <- jf$getResultsData(t(apply(draws$z[,,1], 1, FUN = function(x)order(order(x)))))
 ll_out$summ_latent1 <- summ
 if(ll_out$cur_model_spec$L > 1){
+	
+	# factor 2
 	summ <- list()
 	summ$raww <- jf$getResultsData(draws$z[,,2])
 	summ$norm <- jf$getResultsData(t(apply(draws$z[,,2], 1, FUN = function(x)(x-min(x, na.rm = T))/(max(x, na.rm = T)-min(x, na.rm = T)))))
 	summ$perc <- jf$getResultsData(t(apply(draws$z[,,2], 1, ggplot2::cut_number, n = 100, labels = FALSE)))
 	summ$rankk <- jf$getResultsData(t(apply(draws$z[,,2], 1, FUN = function(x)order(order(x)))))
 	ll_out$summ_latent2 <- summ
+	
+	# combined factor
+	summ <- list()
+	z_comb <- draws$z[,,1] + draws$z[,,2]
+	summ$raww <- jf$getResultsData(z_comb)
+	summ$norm <- jf$getResultsData(t(apply(z_comb, 1, FUN = function(x)(x-min(x, na.rm = T))/(max(x, na.rm = T)-min(x, na.rm = T)))))
+	summ$perc <- jf$getResultsData(t(apply(z_comb, 1, ggplot2::cut_number, n = 100, labels = FALSE)))
+	summ$rankk <- jf$getResultsData(t(apply(z_comb, 1, FUN = function(x)order(order(x)))))
+	ll_out$summ_latentcomb <- summ
 }
 
 # Exceedance probabilities
@@ -87,18 +110,27 @@ ll_out$EP <- apply(draws$z>0, c(2,3), mean)
 # LOOCV
 ll_out$loo <- rstan::loo(ll_out$fit)
 
+# WAIC
+ll_out$waic <- loo::waic(draws$log_lik)
+
 # LOOCV with moment matching
 #ll_out$loo2_mm <- try(rstan::loo(ll_out$fit, moment_match = TRUE, cores = 1))
 
 # Performance and comparison
 ll_out$perf <- cbind(ll_out$cur_model_spec, 
 					 as.data.frame(diag_list),
-					 data.frame(lpd = sum(log(apply(exp(draws$log_lik),2,mean))), # Formula 3 in Aki
+					 data.frame(DIC = ll_out$dev$DIC,
+								pD = ll_out$dev$pD,
+								lpd = sum(log(apply(exp(draws$log_lik),2,mean))), # Formula 3 in Aki
 								lpd_sd = sd(log(apply(exp(draws$log_lik),2,mean))),
 								elpd_loo = as.numeric(ll_out$loo$estimates[1,1]), 
 					            elpd_loo_se = as.numeric(ll_out$loo$estimates[1,2]),
 								perc_lookgr1 = 100*mean(ll_out$loo$diagnostics$pareto_k > 1),
 								perc_lookgr07 = 100*mean(ll_out$loo$diagnostics$pareto_k > 0.7),
+								WAIC = as.numeric(ll_out$waic$estimates[3,1]),
+								WAIC_se = as.numeric(ll_out$waic$estimates[3,2]),
+								per_pwaicgr0.4 = 100*(mean(ll_out$waic$pointwise[,2] > 0.4)), 
+								MAB = ll_out$MAB,
 								rt_mins = ll_out$rt,
 								rt_hours = ll_out$rt/60))
 
@@ -118,6 +150,9 @@ cc = str_remove_all(paste0(paste0(names(ll_out$cur_model_spec)[1:3], "_", ll_out
 # Save output - full
 ll_out$fit <- NULL
 #saveRDS(ll_out, paste0(base_folder, "/outputs/", cur_date, "/r/ix", grid_ix, "_", cc, "_f.rds"))
+
+# Save traces
+#saveRDS(ll_out$trace, paste0(base_folder, "/outputs/", cur_date, "/r/ix", grid_ix, "_", cc, "_tr.rds"))
 
 # Save output
 ll_out$latent_draws <- NULL

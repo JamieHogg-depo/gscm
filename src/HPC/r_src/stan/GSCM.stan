@@ -95,6 +95,7 @@ data {
 // data
 	int<lower=1> N;                	// number of observations
 	int<lower=1> K;                	// number of features
+	int<lower=1> M;					// number of lower diagonal values in Lambda
 	vector[N*K] Y_v;				// vectorised data matrix of order [N,K] 
 	vector[N*K] Y_sd_v;				// vectorised standard deviations of Y
 
@@ -120,18 +121,22 @@ data {
 	int C_u[N+1]; 
 	int offD_id_C_w[nC_w - N];		// indexes for off diagonal terms
 	int D_id_C_w[N]; 				// indexes for diagonal terms - length M
-	vector[K] kappa_fixed; 			// fixed value for kappa - only used when specific_latent_rho_fixed = 3
+	vector[K] kappa_flag; 			// indicator for which specific prior for each element
+	// kappa_flag = -1 -> ICAR 
+	// kappa_flag = -0.5 -> LCAR with estimated SA parameter
+	// kappa_flag = 0 -> IID prior
+	// kappa_flag > 0 -> fixed SA parameter
 
 // Spatial components for ICAR prior
 	int<lower=0> N_edges;
 	int<lower=1, upper=N> node1[N_edges]; 
 	int<lower=1, upper=N> node2[N_edges];
 }
-transformed data {
+//transformed data {
 // number of non-zero entries
-	int<lower=1> M;       
-	M = L*(K-L)+ L*(L-1)/2;   
-}
+//	int<lower=1> M;       
+//	M = L*(K-L)+ L*(L-1)/2;   
+//}
 parameters {    
 	// mean vector
 	vector[K] alpha;
@@ -184,29 +189,29 @@ transformed parameters{
 }
 model {
 	// generic priors
-	Lambda_ld ~ std_normal();
-	Lambda_d ~ std_normal();
-	alpha ~ std_normal();
+	target += std_normal_lpdf( Lambda_ld );
+	target += std_normal_lpdf( Lambda_d );
+	target += std_normal_lpdf( alpha );
 	//chi_draw ~ chi_square(2);
 	
 	// variance priors
 	if(gamma_var_prior == 1){
-		sigma ~ gamma( gamma_a, gamma_b ); // gamma( 2, 1 ) -> 0.0047 of the density is below 0.1 -> 0.74 above 1
-		psi ~ gamma( gamma_a, gamma_b );	// gamma( 2,3 ) -> 0.037 of the density is below 0.1 -> 0.2 above 1
+		target += gamma_lpdf( sigma | gamma_a, gamma_b ); // gamma( 2, 1 ) -> 0.0047 of the density is below 0.1 -> 0.74 above 1
+		target += gamma_lpdf( psi | gamma_a, gamma_b );	// gamma( 2,3 ) -> 0.037 of the density is below 0.1 -> 0.2 above 1
 	}
 	if(gamma_var_prior == 0){
-		sigma ~ std_normal();
-		psi ~ std_normal();
+		target += std_normal_lpdf( sigma );
+		target += std_normal_lpdf( psi );
 	}
 	
 	// spatial autocorrelation priors
 	if(beta_sa_prior == 1){
-		rho ~ beta(6,2); // 0.9375 of density above 0.5
-		kappa ~ beta(6,2);
+		target += beta_lpdf(rho | 6,2); // 0.9375 of density above 0.5
+		target += beta_lpdf(kappa | 6,2);
 	}
 	if(beta_sa_prior == 0){
-		rho ~ uniform( 0, 0.99 ); 
-		kappa ~ uniform( 0, 0.99 );
+		target += uniform_lpdf( rho | 0, 0.99 ); 
+		target += uniform_lpdf( kappa | 0, 0.99 );
 	}
 	
 	// shared latent factors - unit scale
@@ -224,8 +229,21 @@ model {
 	
 	// feature specific latent factors - unit scale
 	for(k in 1:K){
-		if(specific_latent_rho_fixed == 1)
+		if(kappa_flag[k] == -1)
 			target += ICAR_lpdf( Z_epsilon[,k] | N, node1, node2 ); 
+		else if(kappa_flag[k] == 0)
+			target += std_normal_lpdf( Z_epsilon[,k] );
+		else if(kappa_flag[k] == -0.5){
+			target += LCAR_lpdf( Z_epsilon[,k] | kappa[k], 1, C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N );
+			target += normal_lpdf( sum(Z_epsilon[,k]) | 0, 0.001 * N );
+		}
+		else{
+			target += LCAR_lpdf( Z_epsilon[,k] | kappa_flag[k], 1, C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N );
+			target += normal_lpdf( sum(Z_epsilon[,k]) | 0, 0.001 * N );
+		}
+		
+/* 		if(specific_latent_rho_fixed == 1)
+			
 		else if(specific_latent_rho_fixed == 0){
 			target += std_normal_lpdf( Z_epsilon[,k] ); 
 		}
@@ -234,17 +252,23 @@ model {
 			target += normal_lpdf( sum(Z_epsilon[,k]) | 0, 0.001 * N );
 		}
 		else{
-			target += LCAR_lpdf( Z_epsilon[,k] | kappa_fixed[k], 1, C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N );
-			target += normal_lpdf( sum(Z_epsilon[,k]) | 0, 0.001 * N );
-		}
+			if(kappa_fixed[k] == -1){
+				target += LCAR_lpdf( Z_epsilon[,k] | kappa[k], 1, C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N );
+				target += normal_lpdf( sum(Z_epsilon[,k]) | 0, 0.001 * N );
+			}
+			if(kappa_fixed[k] != -1){
+				target += LCAR_lpdf( Z_epsilon[,k] | kappa_fixed[k], 1, C_w, C_v, C_u, offD_id_C_w, D_id_C_w, C_eigenvalues, N );
+				target += normal_lpdf( sum(Z_epsilon[,k]) | 0, 0.001 * N );
+			}
+		} */
 	}
 	
 	// Likelihood - measurement error model
 	if(me == 1){
-		Y_v ~ normal( to_vector(mu), Y_sd_v );
+		target += normal_lpdf( Y_v | to_vector(mu), Y_sd_v );
 	}
 	if(me == 0){
-		Y_v ~ normal( to_vector(mu), me0_std );
+		target += normal_lpdf( Y_v | to_vector(mu), me0_std );
 	}
 }
 generated quantities {
@@ -256,7 +280,7 @@ generated quantities {
 	if(me == 0){ 
 		yrep = to_matrix( normal_rng( to_vector(mu), me0_std ), N, K );
 	}
-	{
+	{	
 		for (nk in 1:N*K){
 			if(me == 1) log_lik[nk] = normal_lpdf( Y_v[nk] | to_vector(mu)[nk], Y_sd_v[nk] );
 			if(me == 0) log_lik[nk] = normal_lpdf( Y_v[nk] | to_vector(mu)[nk], me0_std );

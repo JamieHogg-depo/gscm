@@ -18,9 +18,9 @@
 	
 # Set Stan settings
 	chains = 4
-	iter = 5000 
+	iter = 10000 
 	warmup = 4000
-	thin = 4
+	thin = 3
 
 # Load data
 
@@ -48,12 +48,12 @@
 		rf_data <- rf_list$point[,-c(1:2)]
 		rf_data_sd <- rf_list$sd[,-c(1:2)]
 	}else{
-		census <- global_obj$census %>% filter(ps_state == 6)
+		census <- global_obj$census %>% filter(ps_state == 1)
 		# weight matrix
-		W <- W[global_obj$census$ps_state == 6, global_obj$census$ps_state == 6]
+		W <- W[global_obj$census$ps_state == 1, global_obj$census$ps_state == 1]
 		# risk factor estimates
-		rf_data <- rf_list$point[global_obj$census$ps_state == 6,-c(1:2)]
-		rf_data_sd <- rf_list$sd[global_obj$census$ps_state == 6,-c(1:2)]
+		rf_data <- rf_list$point[global_obj$census$ps_state == 1,-c(1:2)]
+		rf_data_sd <- rf_list$sd[global_obj$census$ps_state == 1,-c(1:2)]
 	}
 
 # spatial objects
@@ -62,8 +62,8 @@ for_stan <- jf$prep4MLCAR(W)
 icar_for_stan <- jf$prep4ICAR(W)
 
 # Define grid of values
-grid <- expand.grid(L = 1,
-                    shared_latent_rho_fixed = 2,
+grid <- expand.grid(L = c(1,2),
+                    shared_latent_rho_fixed = c(0,1,2),
                     specific_latent_rho_fixed = 0, #c(0,1,2),
 					kappa_fixed = 0.9,
                     gamma_var_prior = 1,
@@ -75,7 +75,7 @@ grid <- expand.grid(L = 1,
                     gamma_b = 3,
 					latent_var_fixed = 1, #c(0,1),
 					scale_data = 1, #c(0,1),
-					fo = "smoking__alcohol")
+					fo = "alcohol__smoking")
 grid2 <- data.frame(L = c(1,2,2),
                    shared_latent_rho_fixed = c(0,0,2),
                    specific_latent_rho_fixed = 0,
@@ -115,15 +115,32 @@ d <- list(N = nrow(rf_data),
           K = ncol(rf_data),
           Y = rf_data)
 d <- c(d, for_stan, icar_for_stan, cur_model_spec)
+d$M <- d$L*(d$K-d$L)+ d$L*(d$L-1)/2
+
+# Initial values
+if(d$L == 1){
+	init_fun = function() {
+	  init.values<-list(Lambda_d = array(runif(1,.77,.78), dim = 1),
+						Lambda_ld=c(-0.2,-0.46,-0.29,0.04)+runif(4,-.01,.01))
+	  return(init.values)
+	}
+}else{
+	init_fun = function() {
+	  init.values<-list(Lambda_d = runif(d$L,-.01,.01),
+						Lambda_ld = runif(d$M,-.01,.01))
+	  return(init.values)
+	}
+}
 
 # fit model
 m_s <- Sys.time()
 ll_out$fit <- sampling(object = comp, 
                 #pars = c("Z_z", "mu"),
-				pars = "mu",
+				pars = "Z_z",
                 include = FALSE,
                 data = d, 
-                init = 0,
+                init = init_fun,
+				init_r = 0.01,
 				#refresh = 0, 				
                 chains = chains,
                 control = list(adapt_delta = 0.95,

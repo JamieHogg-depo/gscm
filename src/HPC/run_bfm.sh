@@ -6,12 +6,12 @@ which_m='BFM'
 all_aus=1
 
 # Model
-for grid_ix in 1 # {1..12}
+for grid_ix in {1..6}
 do
 
 	# get the current date
 	cr_date=$(date +%Y%m%d)
-	cur_date=$cr_date'2'
+	cur_date=$cr_date'1'
 
 	# create directories
 	mkdir -p $base_folder/sub_src/$cur_date
@@ -28,8 +28,8 @@ do
 #!/bin/bash -l
 #PBS -N $specs
 #PBS -l ncpus=4
-#PBS -l mem=100GB
-#PBS -l walltime=36:00:00
+#PBS -l mem=40GB
+#PBS -l walltime=30:00:00
 #PBS -e $base_folder/outputs/$cur_date/lyra_errors/$specs
 #PBS -o $base_folder/outputs/$cur_date/lyra_out/$specs
 
