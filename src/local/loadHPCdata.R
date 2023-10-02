@@ -10,7 +10,7 @@ gc()
 source("src/local/funs.R")
 
 # Set date
-cur_date <- c("202310011")
+cur_date <- c("202310011", "202310021")
 # 202309173 is 24 combos with no scale and no latent fixed
 # 202309153 is 24 combos with scale and latent fixed
 
@@ -78,15 +78,8 @@ perf %>%
   geom_point()+
   facet_wrap(shared_latent_rho_fixed~specific_latent_rho_fixed)
 
-ggplot(perf, aes(y = lpd, x = ix, col = as.factor(specific_latent_rho_fixed)))+
+ggplot(perf, aes(y = WAIC, x = shared_latent_rho_fixed, col = as.factor(specific_latent_rho_fixed)))+
   geom_point()+
   facet_grid(.~L)
-
-# Load specific large files
-out_full1 <- readRDS("Z:/gscm/outputs/20230904/r/ix1_model_GSCM__L_2__shared1_fitonly.rds")
-out_full2 <- readRDS("Z:/gscm/outputs/20230904/r/ix2_model_GSCM__L_2__shared1_fitonly.rds")
-
-bayesplot::mcmc_pairs(out_full2, pars = c("sigma[2]", "psi[2]", "sigma[3]"), transformations = "log")
-bayesplot::mcmc_pairs(out_full1, pars = c("sigma[2]", "psi[2]", "sigma[3]"), transformations = "log")
 
 ## END SCRIPT ## ---------------------------------------------------------------

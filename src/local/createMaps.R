@@ -1,20 +1,10 @@
 
-cur_list <- out_all[[3]]
-
-## Pairs plot ## ---------------------------------------------------------------
-
-pr <- prcomp(cur_list$data$y, scale. = T)
-GGally::ggpairs(cbind(cur_list$data$y, 
-                      latent1 = cur_list$summ_latent1$raww$point, 
-                      latent2 = cur_list$summ_latent2$raww$point,
-                      pc1 = pr$x[,1],
-                      pc2 = pr$x[,2]))+
-  theme_bw()
+cur_list <- out_all[[4]]
 
 ## Raw #### --------------------------------------------------------------------
 
 # SETUP
-mapping_data <- cur_list$summ_latent1$raww %>% 
+mapping_data <- cur_list$summ_latentcomb$raww %>% 
   cbind(.,map_sa2) %>% 
   st_as_sf() %>%
   st_transform(4326)
@@ -73,7 +63,7 @@ lay <- rbind(c(9,1,1,1,1,2),
              c(4,10,10,10,10,7))
 full_inset_plt <- arrangeGrob(grobs = c(list(base_boxes), inset_list, list(llegend)), 
                               layout_matrix  = lay,
-                              top = textGrob("Latent 1",gp=gpar(fontsize=8)))
+                              top = textGrob("Index of cancer vunerability",gp=gpar(fontsize=8)))
 
 # save object
 jf$jsave(filename = "raw.png", 
@@ -89,7 +79,7 @@ message("---- Finished raw")
 ## Rank #### -------------------------------------------------------------------
 
 # SETUP
-mapping_data <- cur_list$summ_latent1$rankk %>% 
+mapping_data <- cur_list$summ_latentcomb$rankk %>% 
   cbind(.,map_sa2) %>% 
   st_as_sf() %>%
   st_transform(4326)
@@ -148,7 +138,7 @@ lay <- rbind(c(9,1,1,1,1,2),
              c(4,10,10,10,10,7))
 full_inset_plt <- arrangeGrob(grobs = c(list(base_boxes), inset_list, list(llegend)), 
                               layout_matrix  = lay,
-                              top = textGrob("Latent 1",gp=gpar(fontsize=8)))
+                              top = textGrob("Index of cancer vunerability",gp=gpar(fontsize=8)))
 
 # save object
 jf$jsave(filename = "rank.png", 
@@ -164,7 +154,7 @@ message("---- Finished rank")
 ## Percentiles #### ------------------------------------------------------------
 
 # SETUP
-mapping_data <- cur_list$summ_latent1$perc %>% 
+mapping_data <- cur_list$summ_latentcomb$perc %>% 
   cbind(.,map_sa2) %>% 
   st_as_sf() %>%
   st_transform(4326)
@@ -223,7 +213,7 @@ lay <- rbind(c(9,1,1,1,1,2),
              c(4,10,10,10,10,7))
 full_inset_plt <- arrangeGrob(grobs = c(list(base_boxes), inset_list, list(llegend)), 
                               layout_matrix  = lay,
-                              top = textGrob("Latent 1",gp=gpar(fontsize=8)))
+                              top = textGrob("Index of cancer vunerability",gp=gpar(fontsize=8)))
 
 # save object
 jf$jsave(filename = "perc.png", 
@@ -244,7 +234,9 @@ mapping_data <- as.data.frame(cur_list$EP) %>%
   mutate(V1 = ifelse(V1 == 0, 0.001, V1),
          V1 = ifelse(V1 == 1, 0.999, V1),
          V2 = ifelse(V2 == 0, 0.001, V2),
-         V2 = ifelse(V2 == 1, 0.999, V2)) %>% 
+         V2 = ifelse(V2 == 1, 0.999, V2),
+         V3 = ifelse(V3 == 0, 0.001, V3),
+         V3 = ifelse(V3 == 1, 0.999, V3)) %>% 
   st_as_sf() %>%
   st_transform(4326)
 
@@ -252,7 +244,7 @@ mapping_data <- as.data.frame(cur_list$EP) %>%
 base <- mapping_data %>% 
   ggplot()+
   theme_void()+
-  geom_sf(aes(fill = V1), col = NA)+
+  geom_sf(aes(fill = V3), col = NA)+
   scale_fill_gradientn(colors = c("#008837", "#a6dba0", "white","white","white", "#c2a5cf", "#7b3294"),
                        limits = c(-0.0000001,1.0000001),
                        #oob = squish,
@@ -305,7 +297,7 @@ lay <- rbind(c(9,1,1,1,1,2),
              c(4,10,10,10,10,7))
 full_inset_plt <- arrangeGrob(grobs = c(list(base_boxes), inset_list, list(llegend)), 
                               layout_matrix  = lay,
-                              top = textGrob("Latent 1",gp=gpar(fontsize=8)))
+                              top = textGrob("Index of cancer vunerability",gp=gpar(fontsize=8)))
 
 # save object
 jf$jsave(filename = "ep.png", 

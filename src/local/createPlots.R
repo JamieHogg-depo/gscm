@@ -2,8 +2,6 @@
 ## create plots
 ####
 
-source("src/local/funs.R")
-
 ## Moran's I ## ----------------------------------------------------------------
 
 listw <- mat2listw(W)
@@ -40,19 +38,20 @@ jf$jsave(filename = paste0("pc_loadings.png"),
 
 ## Pairs plot - modelled factors and principal components ## -------------------
 
-chose_ix <- 11
-data.frame(`Factor 1 - GSCM` = out_all[[chose_ix]]$summ_latent1$raww$point,
-           `Factor 2 - GSCM` = out_all[[chose_ix]]$summ_latent2$raww$point,
-           PC1 = pr$x[,1],
+chose_ix <- 4
+data.frame(PC1 = pr$x[,1],
            PC2 = pr$x[,2],
-           Combined = out_all[[chose_ix]]$summ_latent1$raww$point + out_all[[chose_ix]]$summ_latent2$raww$point,
-           ra = out_all[[chose_ix]]$data$census$ra_sa2_3c) %>% 
+           F1 = out_all[[chose_ix]]$summ_latent1$raww$point,
+           F2 = out_all[[chose_ix]]$summ_latent2$raww$point,
+           Combined = out_all[[chose_ix]]$summ_latentcomb$raww$point,
+           ra = census$ra_sa2_3c) %>% 
   GGally::ggpairs(.,
                   columns = 1:5,
                   #ggplot2::aes(color = ra)
-                  columnLabels = c("Factor 1 - GSCM",
-                                   "Factor 2 - GSCM",
-                                   "PC1", "PC2", "Combined"))+
+                  columnLabels = c("PC1", "PC2",
+                                   "Factor 1",
+                                   "Factor 2",
+                                   "Combined"))+
   theme_bw()+
   theme(text = element_text(size = 8))
 jf$jsave(filename = paste0("pairs_pc.png"),
@@ -64,8 +63,8 @@ rm(chose_ix)
 
 ## Pairs - observed data ## ----------------------------------------------------
 
-chose_ix <- 11
-data %>% 
+chose_ix <- 4
+y_mats$point[,-c(1,2)] %>% 
   rename("Current\nSmoking" = smoking,
          'Inadequate\nphysical\nactivity' = activityleiswkpl,
          "Inadequate\ndiet" = diet,
@@ -73,8 +72,8 @@ data %>%
          "Overweight/\nobese" = overweight) %>% 
   mutate(`Factor 1` = out_all[[chose_ix]]$summ_latent1$raww$point,
          `Factor 2` = out_all[[chose_ix]]$summ_latent2$raww$point,
-         `Combined` = out_all[[chose_ix]]$summ_latent1$raww$point + out_all[[chose_ix]]$summ_latent2$raww$point,
-         ra = out_all[[chose_ix]]$data$census$ra_sa2_3c) %>% 
+         Combined = out_all[[chose_ix]]$summ_latentcomb$raww$point,
+         ra = census$ra_sa2_3c) %>% 
   GGally::ggpairs(.,
                   columns = 1:8)+
   theme_bw()+
@@ -110,7 +109,7 @@ rm(data2)
 
 ## Correlation plot - observed data with latent factors ## ---------------------
 
-chose_ix <- 13
+chose_ix <- 4
 
 # rename columns of data
 data2 <- data %>% 
@@ -137,8 +136,12 @@ rm(chose_ix, data2)
 
 ## Measurement error ## --------------------------------------------------------
 
-ix_bfm <- 20
-ix_gscm <- 21
+grid %>% 
+  filter(L == 2,
+         shared_latent_rho_fixed == 2,
+         specific_latent_rho_fixed == 0)
+ix_bfm <- 24
+ix_gscm <- 15
 
 #### equivalence - raw - factor 1
 eqv_raw_1 <- cbind(
@@ -154,8 +157,8 @@ eqv_raw_1 <- cbind(
   geom_errorbarh(col = "grey")+
   geom_point()+
   geom_abline(col = "red")+
-  labs(y = "Factor 1 - raw scores (2-factor GSCM)",
-       x = "Factor 1 - raw scores (2-factor BSFM)")+
+  labs(y = "Factor 1 - raw scores (with ME)",
+       x = "Factor 1 - raw scores (no ME)")+
   theme(text = element_text(size = 8))+
   ylim(-5,5)+xlim(-5,5)
 
@@ -168,8 +171,8 @@ se_raw_1 <- cbind(
 ) %>% 
   dplyr::select(bf_se, gscm_se) %>% 
   arrange(bf_se) %>% 
-  setNames(c("2-factor BSFM",
-             "2-factor GSCM")) %>% 
+  setNames(c("no ME",
+             "with ME")) %>% 
   mutate(x = 1:nrow(.)) %>% 
   pivot_longer(-x) %>% 
   ggplot(aes(y = value, x = x,
@@ -215,8 +218,8 @@ eqv_rank_1 <- cbind(
   geom_errorbarh(col = "grey")+
   geom_point()+
   geom_abline(col = "red")+
-  labs(y = "Factor 1 - rank (2-factor GSCM)",
-       x = "Factor 1 - rank (2-factor BSFM)")+
+  labs(y = "Factor 1 - rank (with ME)",
+       x = "Factor 1 - rank (no ME)")+
   theme(text = element_text(size = 8))
 
 ## se - rank - factor 1
@@ -228,8 +231,8 @@ se_rank_1 <- cbind(
 ) %>% 
   dplyr::select(bf_se, gscm_se) %>% 
   arrange(bf_se) %>% 
-  setNames(c("2-factor BSFM",
-             "2-factor GSCM")) %>% 
+  setNames(c("no ME",
+             "with ME")) %>% 
   mutate(x = 1:nrow(.)) %>% 
   pivot_longer(-x) %>% 
   ggplot(aes(y = value, x = x,
@@ -275,8 +278,8 @@ eqv_raw_2 <- cbind(
   geom_errorbarh(col = "grey")+
   geom_point()+
   geom_abline(col = "red")+
-  labs(y = "Factor 2 - raw scores (2-factor GSCM)",
-       x = "Factor 2 - raw scores (2-factor BSFM)")+
+  labs(y = "Factor 2 - raw scores (with ME)",
+       x = "Factor 2 - raw scores (no ME)")+
   theme(text = element_text(size = 8))+
   ylim(-5,5)+xlim(-5,5)
 
@@ -289,8 +292,8 @@ se_raw_2 <- cbind(
 ) %>% 
   dplyr::select(bf_se, gscm_se) %>% 
   arrange(bf_se) %>% 
-  setNames(c("2-factor BSFM",
-             "2-factor GSCM")) %>% 
+  setNames(c("no ME",
+             "with ME")) %>% 
   mutate(x = 1:nrow(.)) %>% 
   pivot_longer(-x) %>% 
   ggplot(aes(y = value, x = x,
@@ -336,8 +339,8 @@ eqv_rank_2 <- cbind(
   geom_errorbarh(col = "grey")+
   geom_point()+
   geom_abline(col = "red")+
-  labs(y = "Factor 2 - rank (2-factor GSCM)",
-       x = "Factor 2 - rank (2-factor BSFM)")+
+  labs(y = "Factor 2 - rank (with ME)",
+       x = "Factor 2 - rank (no ME)")+
   theme(text = element_text(size = 8))
 
 ## se - rank - Factor 2
@@ -349,8 +352,8 @@ se_rank_2 <- cbind(
 ) %>% 
   dplyr::select(bf_se, gscm_se) %>% 
   arrange(bf_se) %>% 
-  setNames(c("2-factor BSFM",
-             "2-factor GSCM")) %>% 
+  setNames(c("no ME",
+             "with ME")) %>% 
   mutate(x = 1:nrow(.)) %>% 
   pivot_longer(-x) %>% 
   ggplot(aes(y = value, x = x,
@@ -385,10 +388,11 @@ rm(se_rank_2, eqv_rank_2, full_inset_plt, ix_bfm, ix_gscm, lay)
 ## Multiple shared components ## -----------------------------------------------
 
 grid %>% 
-  filter(shared_latent_rho_fixed == 2,
-         specific_latent_rho_fixed == 0)
-ix_l1 <- 10 #17
-ix_l2 <- 11 #18
+  filter(model == "GSCM",
+         shared_latent_rho_fixed == 2,
+         specific_latent_rho_fixed == 2)
+ix_l1 <- 9 #17
+ix_l2 <- 10 #18
 
 #### equivalence - raw - factor 1
 eqv_raw_1 <- cbind(
@@ -512,7 +516,7 @@ rm(se_rank_1, eqv_rank_1, full_inset_plt)
 
 ## Caterpillar plots - rank ## -------------------------------------------------
 
-chose_ix <- 11
+chose_ix <- 10
 
 # Factor 1
 out_all[[chose_ix]]$summ_latent1$raww %>% 
@@ -576,19 +580,6 @@ data.frame(f1 = out_all[[chose_ix]]$summ_latent1$raww$point,
                         #trans = "logit",
                         breaks = c(0,0.2,0.25,0.5,0.75,0.8,1),
                         labels = as.character(c(0,0.2,"",0.5,"",0.8,1)))
-
-## EP plots ## ----------------------------------------------------------------
-
-as.data.frame(ix1$EP) %>% 
-  arrange(V1) %>% 
-  ggplot(aes(y = V1,
-             x = 1:nrow(.)))+
-  geom_point()+
-  labs(y = "Posterior ranks",
-       x = "")+
-  theme_bw()+
-  theme(text = element_text(size = 8))+
-  geom_hline(yintercept = c(0.025, 0.975), linetype = "dotted")
 
 
 ## END SCRIPT ## ---------------------------------------------------------------

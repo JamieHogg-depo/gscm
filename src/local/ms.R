@@ -14,23 +14,44 @@ library(grid)
 library(gridExtra)
 library(Matrix)
 library(spdep)
+library(corrplot)
 rm(list = ls())
+
+# load functions
+source("src/local/funs.R")
+
+# Load unscaled data
+y_mats <- readRDS("C:/r_proj/gscm/data/y_mats.rds")
 
 # load global data
 global_obj <- readRDS("data/global_obj.rds")
 
 # load map
-map_sa2 <- st_read("C:/r_proj/ACAriskfactors/data/2016_SA2_Shape_min/2016_SA2_Shape_min.shp") %>%
-  mutate(SA2 = as.numeric(SA2_MAIN16)) %>%
-  filter(!str_detect(SA2_NAME, "Island")) %>%
-  filter(STATE_NAME != "Other Territories") %>%
-  right_join(.,global_obj$area_concor, by = "SA2") %>%
-  right_join(.,global_obj$census, by = "ps_area")
+# map_sa2 <- st_read("C:/r_proj/ACAriskfactors/data/2016_SA2_Shape_min/2016_SA2_Shape_min.shp") %>%
+#   mutate(SA2 = as.numeric(SA2_MAIN16)) %>%
+#   filter(!str_detect(SA2_NAME, "Island")) %>%
+#   filter(STATE_NAME != "Other Territories") %>%
+#   right_join(.,global_obj$area_concor, by = "SA2") %>%
+#   right_join(.,global_obj$census, by = "ps_area")
+
+# Load modelled results
+cur_date <- c("202310011", "202310021")
+files <- list.files(paste0("Z:/gscm/outputs/", cur_date, "/r"), full.names = T)
+files_fl <- files[!str_detect(files, "_f.rds|_fitonly.rds|_tr.rds")]
+out_all <- lapply(files_fl, readRDS)
+names(out_all) <- files_fl
+
+# get grid
+grid <- bind_rows(lapply(1:length(out_all), FUN = function(x)out_all[[x]]$cur_model_spec), .id = "ix") %>% 
+  mutate(shared_latent_rho_fixed = factor(toCharacterSpec(shared_latent_rho_fixed), c("IID", "ICAR", 'LCAR')),
+         specific_latent_rho_fixed = factor(toCharacterSpec(specific_latent_rho_fixed), c("IID", "ICAR", 'LCAR')))
 
 # Load data
-out <- readRDS("data/y_mats.rds")
-data <- out$point[,-c(1:2)]
-data_sd <- out$sd[,-c(1:2)]
+data <- out_all[[1]]$data$y
+data_sd <- out_all[[1]]$data$y_sd
+map_sa2 <- out_all[[1]]$data$map
+W <- out_all[[1]]$data$W
+census <- out_all[[1]]$data$census
 
 # Australia outline
 aus_border <- suppressMessages(map_sa2 %>% 
@@ -40,11 +61,9 @@ aus_border <- suppressMessages(map_sa2 %>%
 
 # State outline
 state_border <- suppressMessages(map_sa2 %>% 
-                                   mutate(state = str_sub(SA2_MAIN16, 1, 1)) %>% 
-                                   group_by(state, STATE_NAME) %>% 
+                                   group_by(Ste_name16) %>% 
                                    summarise(geometry = st_union(geometry), .groups = "drop") %>% 
                                    filter(!st_is_empty(.)) %>% 
-                                   #mutate(st_init = c("NSW", "VIC", "QLD", "SA", "WA", NA, "NT", NA)) %>% 
                                    st_as_sf() %>%
                                    st_transform(4326))
 
