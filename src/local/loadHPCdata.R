@@ -4,19 +4,18 @@
 
 # Libraries
 library(tidyverse)
-library(corrplot)
 rm(list = ls())
 gc()
 source("src/local/funs.R")
 
 # Set date
-cur_date <- c("202310011", "202310021")
+cur_date <- c("202310022")
 # 202309173 is 24 combos with no scale and no latent fixed
 # 202309153 is 24 combos with scale and latent fixed
 
 # list files
 files <- list.files(paste0("Z:/gscm/outputs/", cur_date, "/r"), full.names = T)
-files_fl <- files[!str_detect(files, "_f.rds|_fitonly.rds|_tr.rds")]
+files_fl <- files[!str_detect(files, "_f.rds|_fitonly.rds|_tr.rds|_ld.rds")]
 
 # read files
 out_all <- lapply(files_fl, readRDS)

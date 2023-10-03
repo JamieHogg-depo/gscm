@@ -16,8 +16,6 @@ getLooColumn <- function(loo, se, rr){
   as.character(paste0(loo, " (", se, ")"))
 }
 
-toCharacterSpec <- function(x)ifelse(x == 0, "IID", ifelse(x == 1, "ICAR", "LCAR"))
-
 getModelSpecs <- function(cur_model_spec){
   shared = toCharacterSpec(cur_model_spec$shared_latent_rho_fixed)
   specific = toCharacterSpec(cur_model_spec$specific_latent_rho_fixed)

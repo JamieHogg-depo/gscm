@@ -2,6 +2,9 @@
 jf <- list()
 
 ## ----------------------------------------------------------------------------
+toCharacterSpec <- function(x)ifelse(x == 0, "IID", ifelse(x == 1, "ICAR", "LCAR"))
+
+## ----------------------------------------------------------------------------
 jf$norm = function(x){
 	(x-min(x, na.rm = T))/(max(x, na.rm = T)-min(x, na.rm = T))
 }

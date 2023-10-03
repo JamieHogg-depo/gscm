@@ -35,9 +35,9 @@ global_obj <- readRDS("data/global_obj.rds")
 #   right_join(.,global_obj$census, by = "ps_area")
 
 # Load modelled results
-cur_date <- c("202310011", "202310021")
+cur_date <- c("202310022")
 files <- list.files(paste0("Z:/gscm/outputs/", cur_date, "/r"), full.names = T)
-files_fl <- files[!str_detect(files, "_f.rds|_fitonly.rds|_tr.rds")]
+files_fl <- files[!str_detect(files, "_f.rds|_fitonly.rds|_tr.rds|_ld.rds")]
 out_all <- lapply(files_fl, readRDS)
 names(out_all) <- files_fl
 
@@ -92,3 +92,31 @@ JHCW <- function(this){
     {{ this }} == "overweight" ~ "Overweight/\nobese",
   )
 }
+
+## Final model ## --------------------------------------------------------------
+
+# selected
+sele <- 5
+cur_list <- out_all[[sele]]
+
+# latent draws
+latent_draws <- readRDS(paste0(str_remove(files_fl[[sele]], ".rds"), "_ld.rds"))
+
+# weighted combo
+w <- apply(cur_list$summ_loadings$point^2, 2, sum)/sum(apply(cur_list$summ_loadings$point^2, 2, sum))
+z_comb <- w[1] * latent_draws[,,1] + w[2] * latent_draws[,,2]
+
+# summarise
+cur_list$summ_latent3$raww <- jf$getResultsData(z_comb)
+cur_list$summ_latent3$perc <- jf$getResultsData(t(apply(z_comb, 1, ggplot2::cut_number, n = 100, labels = FALSE)))
+cur_list$summ_latent3$rankk <- jf$getResultsData(t(apply(z_comb, 1, FUN = function(x)order(order(x)))))
+cur_list$EP[,3] <- apply(z_comb > 0, 2, mean)
+
+# cleanup
+rm(sele)
+
+## Rank Sum Method ## ----------------------------------------------------------
+
+raw_RS <- order(order(rowSums(apply(data, 2, FUN = function(x)order(order(x))))))
+
+## END SCRIPT ## ---------------------------------------------------------------

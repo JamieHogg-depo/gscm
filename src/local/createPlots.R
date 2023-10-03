@@ -38,17 +38,17 @@ jf$jsave(filename = paste0("pc_loadings.png"),
 
 ## Pairs plot - modelled factors and principal components ## -------------------
 
-chose_ix <- 4
-data.frame(PC1 = pr$x[,1],
+data.frame(raw_RS = raw_RS, 
+           PC1 = pr$x[,1],
            PC2 = pr$x[,2],
-           F1 = out_all[[chose_ix]]$summ_latent1$raww$point,
-           F2 = out_all[[chose_ix]]$summ_latent2$raww$point,
-           Combined = out_all[[chose_ix]]$summ_latentcomb$raww$point,
+           F1 = cur_list$summ_latent1$raww$point,
+           F2 = cur_list$summ_latent2$raww$point,
+           Combined = cur_list$summ_latent3$raww$point,
            ra = census$ra_sa2_3c) %>% 
   GGally::ggpairs(.,
-                  columns = 1:5,
+                  columns = 1:6,
                   #ggplot2::aes(color = ra)
-                  columnLabels = c("PC1", "PC2",
+                  columnLabels = c("Rank Sum", "PC1", "PC2",
                                    "Factor 1",
                                    "Factor 2",
                                    "Combined"))+
@@ -59,31 +59,28 @@ jf$jsave(filename = paste0("pairs_pc.png"),
          square = T,
          square_size = 1200,
          dpi = 300)
-rm(chose_ix)
 
 ## Pairs - observed data ## ----------------------------------------------------
 
-chose_ix <- 4
 y_mats$point[,-c(1,2)] %>% 
   rename("Current\nSmoking" = smoking,
          'Inadequate\nphysical\nactivity' = activityleiswkpl,
          "Inadequate\ndiet" = diet,
          "Risky\nalcohol\nconsumption" = alcohol,
          "Overweight/\nobese" = overweight) %>% 
-  mutate(`Factor 1` = out_all[[chose_ix]]$summ_latent1$raww$point,
-         `Factor 2` = out_all[[chose_ix]]$summ_latent2$raww$point,
-         Combined = out_all[[chose_ix]]$summ_latentcomb$raww$point,
+  mutate(`Factor 1` = cur_list$summ_latent1$raww$point,
+         `Factor 2` = cur_list$summ_latent2$raww$point,
+         Combined = cur_list$summ_latent3$raww$point,
          ra = census$ra_sa2_3c) %>% 
   GGally::ggpairs(.,
                   columns = 1:8)+
   theme_bw()+
-  theme(text = element_text(size = 8))
+  theme(text = element_text(size = 5))
 jf$jsave(filename = paste0("pairs_observed_factors.png"),
          base_folder = "out",
          square = T,
          square_size = 1200,
          dpi = 300)
-rm(chose_ix)
 
 ## Correlation plot - observed data ## -----------------------------------------
 
@@ -109,8 +106,6 @@ rm(data2)
 
 ## Correlation plot - observed data with latent factors ## ---------------------
 
-chose_ix <- 4
-
 # rename columns of data
 data2 <- data %>% 
   rename("Current\nSmoking" = smoking,
@@ -118,9 +113,9 @@ data2 <- data %>%
          "Inadequate\ndiet" = diet,
          "Risky\nalcohol\nconsumption" = alcohol,
          "Overweight/\nobese" = overweight) %>% 
-  mutate(`Factor 1` = out_all[[chose_ix]]$summ_latent1$raww$point,
-         `Factor 2` = out_all[[chose_ix]]$summ_latent2$raww$point,
-         `Combined` = out_all[[chose_ix]]$summ_latentcomb$raww$point)
+  mutate(`Factor 1` = cur_list$summ_latent1$raww$point,
+         `Factor 2` = cur_list$summ_latent2$raww$point,
+         `Combined` = cur_list$summ_latent3$raww$point)
 
 res <- cor(data2)
 ggcorrplot::ggcorrplot(res, #hc.order = TRUE,
@@ -132,7 +127,7 @@ jf$jsave(filename = paste0("cor_withfactors.png"),
          square = T,
          square_size = 1200,
          dpi = 300)
-rm(chose_ix, data2)
+rm(data2)
 
 ## Measurement error ## --------------------------------------------------------
 
