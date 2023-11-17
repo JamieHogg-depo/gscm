@@ -2,6 +2,7 @@
 for(jkl in 1:3){
   
 message(paste0("Round: ", jkl))
+top_label <- ifelse(jkl == 3, "Combined", paste0("Factor ", jkl))
 
 ## Raw #### --------------------------------------------------------------------
   
@@ -82,7 +83,7 @@ lay <- rbind(c(9,1,1,1,1,2),
              c(4,10,10,10,10,7))
 full_inset_plt <- arrangeGrob(grobs = c(list(base_boxes), inset_list, list(llegend)), 
                               layout_matrix  = lay,
-                              top = textGrob("Index of cancer vunerability",gp=gpar(fontsize=8)))
+                              top = textGrob(top_label,gp=gpar(fontsize=8)))
 
 # save object
 jf$jsave(filename = paste0("map_raw", jkl, ".png"), 
@@ -249,7 +250,7 @@ lay <- rbind(c(9,1,1,1,1,2),
              c(4,10,10,10,10,7))
 full_inset_plt <- arrangeGrob(grobs = c(list(base_boxes), inset_list, list(llegend)), 
                               layout_matrix  = lay,
-                              top = textGrob("Index of cancer vunerability",gp=gpar(fontsize=8)))
+                              top = textGrob(top_label,gp=gpar(fontsize=8)))
 
 # save object
 jf$jsave(filename = paste0("map_rank", jkl, ".png"), 
@@ -416,7 +417,7 @@ lay <- rbind(c(9,1,1,1,1,2),
              c(4,10,10,10,10,7))
 full_inset_plt <- arrangeGrob(grobs = c(list(base_boxes), inset_list, list(llegend)), 
                               layout_matrix  = lay,
-                              top = textGrob("Index of cancer vunerability",gp=gpar(fontsize=8)))
+                              top = textGrob(top_label,gp=gpar(fontsize=8)))
 
 # save object
 jf$jsave(filename = paste0("map_perc", jkl, ".png"), 
@@ -570,7 +571,7 @@ lay <- rbind(c(9,1,1,1,1,2),
              c(4,10,10,10,10,7))
 full_inset_plt <- arrangeGrob(grobs = c(list(base_boxes), inset_list, list(llegend)), 
                               layout_matrix  = lay,
-                              top = textGrob("Index of cancer vunerability",gp=gpar(fontsize=8)))
+                              top = textGrob(top_label,gp=gpar(fontsize=8)))
 
 # save object
 jf$jsave(filename = paste0("map_ep", jkl, ".png"), 

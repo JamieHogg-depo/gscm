@@ -82,6 +82,82 @@ jf$jsave(filename = paste0("pairs_observed_factors.png"),
          square_size = 1200,
          dpi = 300)
 
+## Scatter - Alcohol ## --------------------------------------------------------
+
+y_mats$point[,-c(1,2)] %>% 
+  mutate(`Factor 1` = cur_list$summ_latent1$raww$point,
+         `Factor 2` = cur_list$summ_latent2$raww$point,
+         Combined = cur_list$summ_latent3$raww$point,
+         ra = census$ra_sa2_3c) %>% 
+  ggplot(aes(y = alcohol, x = `Factor 1`, col = ra))+
+  geom_point()+
+  theme_bw()+
+  theme(text = element_text(size = 8),
+        legend.position = "bottom")+
+  labs(y = "Risky alcohol consumption (proportion)",
+       col = "")
+jf$jsave(filename = paste0("pairs_alcohol_f1.png"),
+         base_folder = "out",
+         square = T,
+         square_size = 1200,
+         dpi = 300)
+
+y_mats$point[,-c(1,2)] %>% 
+  mutate(`Factor 1` = cur_list$summ_latent1$raww$point,
+         `Factor 2` = cur_list$summ_latent2$raww$point,
+         Combined = cur_list$summ_latent3$raww$point,
+         ra = census$ra_sa2_3c) %>% 
+  ggplot(aes(y = alcohol, x = `Factor 2`, col = ra))+
+  geom_point()+
+  theme_bw()+
+  theme(text = element_text(size = 8),
+        legend.position = "bottom")+
+  labs(y = "Risky alcohol consumption (proportion)",
+       col = "")
+jf$jsave(filename = paste0("pairs_alcohol_f2.png"),
+         base_folder = "out",
+         square = T,
+         square_size = 1200,
+         dpi = 300)
+
+## Scatter - smoking ## --------------------------------------------------------
+
+y_mats$point[,-c(1,2)] %>% 
+  mutate(`Factor 1` = cur_list$summ_latent1$raww$point,
+         `Factor 2` = cur_list$summ_latent2$raww$point,
+         Combined = cur_list$summ_latent3$raww$point,
+         ra = census$ra_sa2_3c) %>% 
+  ggplot(aes(y = smoking, x = `Factor 1`, col = ra))+
+  geom_point()+
+  theme_bw()+
+  theme(text = element_text(size = 8),
+        legend.position = "bottom")+
+  labs(y = "Current smoking (proportion)",
+       col = "")
+jf$jsave(filename = paste0("pairs_smoking_f1.png"),
+         base_folder = "out",
+         square = T,
+         square_size = 1200,
+         dpi = 300)
+
+y_mats$point[,-c(1,2)] %>% 
+  mutate(`Factor 1` = cur_list$summ_latent1$raww$point,
+         `Factor 2` = cur_list$summ_latent2$raww$point,
+         Combined = cur_list$summ_latent3$raww$point,
+         ra = census$ra_sa2_3c) %>% 
+  ggplot(aes(y = smoking, x = `Factor 2`, col = ra))+
+  geom_point()+
+  theme_bw()+
+  theme(text = element_text(size = 8),
+        legend.position = "bottom")+
+  labs(y = "Current smoking (proportion)",
+       col = "")
+jf$jsave(filename = paste0("pairs_smoking_f2.png"),
+         base_folder = "out",
+         square = T,
+         square_size = 1200,
+         dpi = 300)
+
 ## Correlation plot - observed data ## -----------------------------------------
 
 # rename columns of data
