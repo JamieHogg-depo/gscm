@@ -652,5 +652,51 @@ data.frame(f1 = out_all[[chose_ix]]$summ_latent1$raww$point,
                         breaks = c(0,0.2,0.25,0.5,0.75,0.8,1),
                         labels = as.character(c(0,0.2,"",0.5,"",0.8,1)))
 
+## Remoteness and IRSD ## ------------------------------------------------------
+
+temp_fun <- function(df){
+cbind(global_obj$census, df) %>% 
+  mutate(ABS_irsd_decile_nation_complete = factor(ABS_irsd_decile_nation_complete, 
+                                                  levels = 1:10,
+                                                  labels = c("Most\ndisadvantaged", 
+                                                             as.character(2:9), 
+                                                             "Least\ndisadvantaged")),
+         ra_sa2 = fct_relevel(ra_sa2, "Major Cities")) %>% 
+  ggplot(aes(x = point, fill = ABS_irsd_decile_nation_complete, y = ra_sa2))+
+  geom_boxplot()+
+    scale_fill_viridis_d(option = "B", direction = 1)+
+  theme_bw()+
+  labs(x = "Index (posterior median percentiles)",
+       y = "",
+       fill = "")+
+  theme(text = element_text(size = 8))
+}
+
+# factor 1
+temp_fun(cur_list$summ_latent1$perc)+
+  labs(title = "Factor 1")
+jf$jsave(filename = "ra_irsd1.png",
+         base_folder = "out",
+         square = F,
+         square_size = 1200,
+         dpi = 300)
+
+# factor 2
+temp_fun(cur_list$summ_latent2$perc)+
+  labs(title = "Factor 2")
+jf$jsave(filename = "ra_irsd2.png",
+         base_folder = "out",
+         square = F,
+         square_size = 1200,
+         dpi = 300)
+
+# factor 3
+temp_fun(cur_list$summ_latent3$perc)+
+  labs(title = "Combined")
+jf$jsave(filename = "ra_irsd3.png",
+         base_folder = "out",
+         square = F,
+         square_size = 1200,
+         dpi = 300)
 
 ## END SCRIPT ## ---------------------------------------------------------------
