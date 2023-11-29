@@ -115,6 +115,15 @@ cur_list$EP[,3] <- apply(z_comb > 0, 2, mean)
 # cleanup
 rm(sele)
 
+# EP above 95th percentile 
+EP_perc95 <- colMeans(t(apply(z_comb, 1, ggplot2::cut_number, n = 100, labels = FALSE)) > 95)
+
+# EP above 80th percentile 
+EP_perc80 <- colMeans(t(apply(z_comb, 1, ggplot2::cut_number, n = 100, labels = FALSE)) > 80)
+
+# EP below 20th percentile 
+EP_perc20 <- colMeans(t(apply(z_comb, 1, ggplot2::cut_number, n = 100, labels = FALSE)) < 20)
+
 ## Rank Sum Method ## ----------------------------------------------------------
 
 raw_RS <- order(order(rowSums(apply(data, 2, FUN = function(x)order(order(x))))))
