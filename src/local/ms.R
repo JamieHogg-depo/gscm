@@ -102,6 +102,8 @@ cur_list <- out_all[[sele]]
 # latent draws
 latent_draws <- readRDS(paste0(str_remove(files_fl[[sele]], ".rds"), "_ld.rds"))
 
+## Combined Index ## -----------------------------------------------------------
+
 # weighted combo
 w <- apply(cur_list$summ_loadings$point^2, 2, sum)/sum(apply(cur_list$summ_loadings$point^2, 2, sum))
 z_comb <- w[1] * latent_draws[,,1] + w[2] * latent_draws[,,2]
@@ -115,14 +117,22 @@ cur_list$EP[,3] <- apply(z_comb > 0, 2, mean)
 # cleanup
 rm(sele)
 
-# EP above 95th percentile 
-EP_perc95 <- colMeans(t(apply(z_comb, 1, ggplot2::cut_number, n = 100, labels = FALSE)) > 95)
+## ERP weighted Combined index ## ----------------------------------------------
 
-# EP above 80th percentile 
-EP_perc80 <- colMeans(t(apply(z_comb, 1, ggplot2::cut_number, n = 100, labels = FALSE)) > 80)
+# get the posterior draws
+z_erp_comb <- t(t(z_comb)*cur_list$data$census$N_persons)
 
-# EP below 20th percentile 
-EP_perc20 <- colMeans(t(apply(z_comb, 1, ggplot2::cut_number, n = 100, labels = FALSE)) < 20)
+# summarise
+cur_list$summ_latent4$raww <- jf$getResultsData(z_erp_comb)
+cur_list$summ_latent4$perc <- jf$getResultsData(t(apply(z_erp_comb, 1, ggplot2::cut_number, n = 100, labels = FALSE)))
+cur_list$summ_latent4$rankk <- jf$getResultsData(t(apply(z_erp_comb, 1, FUN = function(x)order(order(x)))))
+cur_list$EP <- cbind(cur_list$EP, apply(z_erp_comb > 0, 2, mean))
+
+## Probabilities ## ------------------------------------------------------------
+
+cur_list$probs$latent3 <- jf$getProbs(z_comb)
+
+cur_list$probs$latent4 <- jf$getProbs(z_erp_comb)
 
 ## Rank Sum Method ## ----------------------------------------------------------
 

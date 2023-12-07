@@ -1,8 +1,9 @@
 
-for(jkl in 1:3){
+for(jkl in 1:4){
   
 message(paste0("Round: ", jkl))
 top_label <- ifelse(jkl == 3, "Combined", paste0("Factor ", jkl))
+top_label <- ifelse(jkl == 4, "Combined - ERP weighted", paste0("Factor ", jkl))
 
 ## Raw #### --------------------------------------------------------------------
   

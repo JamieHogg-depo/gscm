@@ -556,3 +556,29 @@ jf$addBoxLabel <- function(i, color = "white", size = 0.5){
   }
 }
 
+## getProbs ## -----------------------------------------------------------------
+
+jf$getProbs <- function(draws){
+  
+  data.frame(
+    
+    # EP above 99th percentile 
+    perc99 = colMeans(t(apply(draws, 1, ggplot2::cut_number, 
+                              n = 100, labels = FALSE)) > 99),
+    
+    # EP above 95th percentile 
+    perc95 = colMeans(t(apply(draws, 1, ggplot2::cut_number, 
+                              n = 100, labels = FALSE)) > 95),
+    
+    # EP above 80th percentile 
+    perc80 = colMeans(t(apply(draws, 1, ggplot2::cut_number, 
+                              n = 100, labels = FALSE)) > 80),
+    
+    # EP below 20th percentile 
+    perc20 = colMeans(t(apply(draws, 1, ggplot2::cut_number, 
+                              n = 100, labels = FALSE)) < 20)
+    
+  )
+  
+}
+

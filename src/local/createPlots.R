@@ -71,9 +71,10 @@ y_mats$point[,-c(1,2)] %>%
   mutate(`Factor 1` = cur_list$summ_latent1$raww$point,
          `Factor 2` = cur_list$summ_latent2$raww$point,
          Combined = cur_list$summ_latent3$raww$point,
+         `Combined - weighted` = cur_list$summ_latent4$perc$point,
          ra = census$ra_sa2_3c) %>% 
   GGally::ggpairs(.,
-                  columns = 1:8)+
+                  columns = 1:9)+
   theme_bw()+
   theme(text = element_text(size = 5))
 jf$jsave(filename = paste0("pairs_observed_factors.png"),
@@ -191,7 +192,8 @@ data2 <- data %>%
          "Overweight/\nobese" = overweight) %>% 
   mutate(`Factor 1` = cur_list$summ_latent1$raww$point,
          `Factor 2` = cur_list$summ_latent2$raww$point,
-         `Combined` = cur_list$summ_latent3$raww$point)
+         `Combined` = cur_list$summ_latent3$raww$point,
+         `Combined - ERP weighted` = cur_list$summ_latent4$raww$point)
 
 res <- cor(data2)
 ggcorrplot::ggcorrplot(res, #hc.order = TRUE,

@@ -4,6 +4,7 @@
 mapping_data <- data.frame(f1 = cur_list$summ_latent1$perc$point,
                            f2 = cur_list$summ_latent2$perc$point,
                            fc = cur_list$summ_latent3$perc$point,
+                           fcerp = cur_list$summ_latent4$perc$point,
                            alcohol = cut_number(cur_list$data$y$alcohol, 100, labels = F),
                            smoking = cut_number(cur_list$data$y$smoking, 100, labels = F),
                            overweight = cut_number(cur_list$data$y$overweight, 100, labels = F)) %>% 
@@ -16,7 +17,7 @@ mapping_data <- data.frame(f1 = cur_list$summ_latent1$perc$point,
 for(jkl in 1:8){
 
 mapping_data %>% 
-  mutate(type = fct_relevel(as.factor(type), c("alcohol", "smoking", "overweight", "f1", "f2", "fc"))) %>% 
+  mutate(type = fct_relevel(as.factor(type), c("alcohol", "smoking", "overweight", "f1", "f2", "fc", "fcerp"))) %>% 
   ggplot()+
   theme_void()+
   geom_sf(aes(fill = y), col = NA)+
@@ -43,7 +44,8 @@ mapping_data %>%
                                                   overweight = "Overweight/\nobese",
                                                   f1 = "Index:\nFactor 1",
                                                   f2 = "Index:\nFactor 2",
-                                                  fc = "Index:\nCombined")))
+                                                  fc = "Index:\nCombined",
+                                                  fcerp = "Index:\nCombined\nERP weighted")))
 jf$jsave(filename = paste0("map_perc_capital_", lims$city[jkl], ".png"), 
          base_folder = "out",
          square = T,
