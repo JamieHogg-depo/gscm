@@ -512,7 +512,7 @@ jf$make_numeric_decimal <- function(.data, digits = 2){
 
 ## -----------------------------------------------------------------------------
 # adds boxlabels to maps
-jf$addBoxLabel <- function(i, color = "white", size = 0.5){
+jf$addBoxLabel <- function(i, color = "white", size = 0.5, textsize = 3){
   if(lims$position[i] == "r"){
     list(
       annotate("rect", 
@@ -521,7 +521,7 @@ jf$addBoxLabel <- function(i, color = "white", size = 0.5){
                color = color, fill = NA, size = size),
       annotate("text", y = mean(c(lims$ymin[i], lims$ymax[i])), 
                x = lims$xmax[i] + 1, label = lims$initials[i],
-               size = 3) 
+               size = textsize) 
     )
   } else if(lims$position[i] == "b"){
     list(
@@ -531,7 +531,7 @@ jf$addBoxLabel <- function(i, color = "white", size = 0.5){
                color = color, fill = NA, size = size),
       annotate("text", x = mean(c(lims$xmin[i], lims$xmax[i])), 
                y = lims$ymin[i] - 1, label = lims$initials[i],
-               size = 3) 
+               size = textsize) 
     )
   } else if(lims$position[i] == "l"){
     list(
@@ -541,7 +541,7 @@ jf$addBoxLabel <- function(i, color = "white", size = 0.5){
                color = color, fill = NA, size = size),
       annotate("text", y = mean(c(lims$ymin[i], lims$ymax[i])), 
                x = lims$xmin[i] - 1, label = lims$initials[i],
-               size = 3) 
+               size = textsize) 
     )
   }else{
     list(
@@ -551,7 +551,7 @@ jf$addBoxLabel <- function(i, color = "white", size = 0.5){
                color = color, fill = NA, size = size),
       annotate("text", x = mean(c(lims$xmin[i], lims$xmax[i])), 
                y = lims$ymax[i] + 1, label = lims$initials[i],
-               size = 3) 
+               size = textsize) 
     )
   }
 }
@@ -560,25 +560,24 @@ jf$addBoxLabel <- function(i, color = "white", size = 0.5){
 
 jf$getProbs <- function(draws){
   
-  data.frame(
+  the_perc <- t(apply(draws, 1, ggplot2::cut_number, 
+                    n = 100, labels = FALSE))
+  
+  return(data.frame(
     
     # EP above 99th percentile 
-    perc99 = colMeans(t(apply(draws, 1, ggplot2::cut_number, 
-                              n = 100, labels = FALSE)) > 99),
+    perc99 = colMeans(the_perc > 99),
     
     # EP above 95th percentile 
-    perc95 = colMeans(t(apply(draws, 1, ggplot2::cut_number, 
-                              n = 100, labels = FALSE)) > 95),
+    perc95 = colMeans(the_perc > 95),
     
     # EP above 80th percentile 
-    perc80 = colMeans(t(apply(draws, 1, ggplot2::cut_number, 
-                              n = 100, labels = FALSE)) > 80),
+    perc80 = colMeans(the_perc > 80),
     
     # EP below 20th percentile 
-    perc20 = colMeans(t(apply(draws, 1, ggplot2::cut_number, 
-                              n = 100, labels = FALSE)) < 20)
+    perc20 = colMeans(the_perc < 20)
     
-  )
+  ))
   
 }
 

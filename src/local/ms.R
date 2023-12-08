@@ -130,6 +130,10 @@ cur_list$EP <- cbind(cur_list$EP, apply(z_erp_comb > 0, 2, mean))
 
 ## Probabilities ## ------------------------------------------------------------
 
+cur_list$probs$latent1 <- jf$getProbs(latent_draws[,,1])
+
+cur_list$probs$latent2 <- jf$getProbs(latent_draws[,,2])
+
 cur_list$probs$latent3 <- jf$getProbs(z_comb)
 
 cur_list$probs$latent4 <- jf$getProbs(z_erp_comb)

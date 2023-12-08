@@ -233,4 +233,101 @@ as.data.frame(matrix(paste0(point, " (", lower, ", ", upper, ")"), nrow = 5, nco
   knitr::kable(., "latex", booktabs = TRUE)
 rm(tf, point, lower, upper)
 
+## TOP 4 AREAS FOR EACH INDEX ## -----------------------------------------------
+
+    # principal components
+    pr <- prcomp(data, scale. = T)
+
+    # convert proportions to quantiles
+    temp <- bind_cols(lapply(y_mats$point[,-c(1,2)], ggplot2::cut_number, n = 100, labels = FALSE))
+    
+    # make dataset of top areas
+    list(
+      temp %>% 
+        mutate(perc95 = raw_RS) %>% 
+        cbind(.,map_sa2) %>% 
+        left_join(.,global_obj$census) %>% 
+        slice_max(perc95, n = 4, with_ties = FALSE) %>% 
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "ra_sa2", 1:5),
+      
+      temp %>% 
+        mutate(perc95 = pr$x[,1]) %>% 
+        cbind(.,map_sa2) %>% 
+        left_join(.,global_obj$census) %>% 
+        slice_max(perc95, n = 4, with_ties = FALSE) %>% 
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "ra_sa2", 1:5),
+      
+      temp %>% 
+        mutate(perc95 = pr$x[,2]) %>% 
+        cbind(.,map_sa2) %>% 
+        left_join(.,global_obj$census) %>% 
+        slice_max(perc95, n = 4, with_ties = FALSE) %>% 
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "ra_sa2", 1:5),
+      
+      cur_list$probs$latent1 %>% 
+        cbind(.,cur_list$summ_latent1$perc) %>% 
+        cbind(.,map_sa2) %>% 
+        left_join(.,global_obj$census) %>% 
+        cbind(.,temp) %>% 
+        slice_max(perc95, n = 4, with_ties = FALSE) %>% 
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", 50:54),
+      
+      cur_list$probs$latent2 %>% 
+        cbind(.,cur_list$summ_latent2$perc) %>%
+        cbind(.,map_sa2) %>% 
+        left_join(.,global_obj$census) %>% 
+        cbind(.,temp) %>%
+        slice_max(perc95, n = 4, with_ties = FALSE) %>% 
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", 50:54),
+      
+      cur_list$probs$latent3 %>% 
+        cbind(.,cur_list$summ_latent3$perc) %>%
+        cbind(.,map_sa2) %>% 
+        left_join(.,global_obj$census) %>% 
+        cbind(.,temp) %>%
+        slice_max(perc95, n = 4, with_ties = FALSE) %>% 
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", 50:54),
+      
+      cur_list$probs$latent4 %>% 
+        cbind(.,cur_list$summ_latent4$perc) %>%
+        cbind(.,map_sa2) %>% 
+        left_join(.,global_obj$census) %>% 
+        cbind(.,temp) %>% 
+        slice_max(perc95, n = 4, with_ties = FALSE) %>% 
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", 50:54)
+    ) %>% 
+      bind_rows(.id = "Index") %>% 
+      group_by(Index) %>% 
+      mutate(total_pop_effected = sum(N_persons)) %>% 
+      ungroup() %>% 
+      mutate(Index = c(rep("Rank Sum", 4),
+                       rep("PC1", 4),
+                       rep("PC2", 4),
+                       rep("Index 1", 4),
+                       rep("Index 2", 4),
+                       rep("Index 3 - combined", 4),
+                       rep("Index 4 - combined PW", 4)),
+             N_persons = round(N_persons),
+             Ste_name16 = case_when(
+               Ste_name16 == "New South Wales" ~ "NSW",
+               Ste_name16 == "Queensland" ~ "QLD",
+               Ste_name16 == "Australian Capital Territory" ~ "ACT",
+               Ste_name16 == "Northern Territory" ~ "NT",
+               Ste_name16 == "Western Australia" ~ "WA",
+               Ste_name16 == "Victoria" ~ "VIC"
+             )) %>% 
+      dplyr::select(Index, Sa2_name16, Ste_name16, N_persons, activityleiswkpl, alcohol, diet, overweight, smoking) %>% 
+      rename(`Area Name` = Sa2_name16,
+             `State` = Ste_name16,
+             `Population of area` = N_persons,
+             `Inadequate physical activity` = activityleiswkpl,
+             `Risky alcohol consumption` = alcohol,
+             `Inadequate diet` = diet,
+             `Current smoking` = smoking,
+             `Overweight/obese` = overweight) %>% 
+      knitr::kable(., "latex", booktabs = TRUE, format.args = list(big.mark = ","))
+    
+    # cleanup
+    rm(temp, pr)
+
 ## END SCRIPT ## ---------------------------------------------------------------
