@@ -239,62 +239,71 @@ rm(tf, point, lower, upper)
     pr <- prcomp(data, scale. = T)
 
     # convert proportions to quantiles
-    temp <- bind_cols(lapply(y_mats$point[,-c(1,2)], ggplot2::cut_number, n = 100, labels = FALSE))
+    rf_point_perc <- bind_cols(lapply(y_mats$point[,-c(1,2)], ggplot2::cut_number, n = 100, labels = FALSE))
+    rf_se_perc <- bind_cols(lapply(y_mats$sd[,-c(1,2)], ggplot2::cut_number, n = 100, labels = FALSE))
+    names(rf_se_perc) <- paste0(names(rf_se_perc), "_se")
     
     # make dataset of top areas
-    list(
-      temp %>% 
+    temp2 <- list(
+      rf_point_perc %>% 
+        cbind(.,rf_se_perc) %>%
         mutate(perc95 = raw_RS) %>% 
         cbind(.,map_sa2) %>% 
         left_join(.,global_obj$census) %>% 
         slice_max(perc95, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "ra_sa2", 1:5),
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "ra_sa2", 1:10),
       
-      temp %>% 
+      rf_point_perc %>% 
+        cbind(.,rf_se_perc) %>%
         mutate(perc95 = pr$x[,1]) %>% 
         cbind(.,map_sa2) %>% 
         left_join(.,global_obj$census) %>% 
         slice_max(perc95, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "ra_sa2", 1:5),
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "ra_sa2", 1:10),
       
-      temp %>% 
+      rf_point_perc %>% 
+        cbind(.,rf_se_perc) %>%
         mutate(perc95 = pr$x[,2]) %>% 
         cbind(.,map_sa2) %>% 
         left_join(.,global_obj$census) %>% 
         slice_max(perc95, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "ra_sa2", 1:5),
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "ra_sa2", 1:10),
       
       cur_list$probs$latent1 %>% 
         cbind(.,cur_list$summ_latent1$perc) %>% 
         cbind(.,map_sa2) %>% 
         left_join(.,global_obj$census) %>% 
-        cbind(.,temp) %>% 
+        cbind(.,rf_point_perc) %>% 
+        cbind(.,rf_se_perc) %>%
         slice_max(perc95, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", 50:54),
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", 50:58),
       
       cur_list$probs$latent2 %>% 
         cbind(.,cur_list$summ_latent2$perc) %>%
         cbind(.,map_sa2) %>% 
         left_join(.,global_obj$census) %>% 
-        cbind(.,temp) %>%
+        cbind(.,rf_point_perc) %>%
+        cbind(.,rf_se_perc) %>%
         slice_max(perc95, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", 50:54),
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", 50:58),
       
       cur_list$probs$latent3 %>% 
         cbind(.,cur_list$summ_latent3$perc) %>%
         cbind(.,map_sa2) %>% 
         left_join(.,global_obj$census) %>% 
-        cbind(.,temp) %>%
+        cbind(.,rf_point_perc) %>%
+        cbind(.,rf_se_perc) %>%
         slice_max(perc95, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", 50:54),
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", 50:58),
       
       cur_list$probs$latent4 %>% 
         cbind(.,cur_list$summ_latent4$perc) %>%
         cbind(.,map_sa2) %>% 
         left_join(.,global_obj$census) %>% 
-        cbind(.,temp) %>% 
+        cbind(.,rf_point_perc) %>%
+        cbind(.,rf_se_perc) %>%
         slice_max(perc95, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", 50:54)
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", 50:58)
     ) %>% 
       bind_rows(.id = "Index") %>% 
       group_by(Index) %>% 
@@ -315,8 +324,13 @@ rm(tf, point, lower, upper)
                Ste_name16 == "Northern Territory" ~ "NT",
                Ste_name16 == "Western Australia" ~ "WA",
                Ste_name16 == "Victoria" ~ "VIC"
-             )) %>% 
-      dplyr::select(Index, Sa2_name16, Ste_name16, N_persons, activityleiswkpl, alcohol, diet, overweight, smoking) %>% 
+             ))
+    round(unique(temp2$total_pop_effected), -2)
+    
+    temp2 %>% 
+      dplyr::select(Index, Sa2_name16, Ste_name16, N_persons, 
+                    activityleiswkpl, alcohol, diet, overweight, smoking) %>% #,
+                    #activityleiswkpl_se, alcohol_se, diet_se, overweight_se, smoking_se) %>% 
       rename(`Area Name` = Sa2_name16,
              `State` = Ste_name16,
              `Population of area` = N_persons,
@@ -324,10 +338,10 @@ rm(tf, point, lower, upper)
              `Risky alcohol consumption` = alcohol,
              `Inadequate diet` = diet,
              `Current smoking` = smoking,
-             `Overweight/obese` = overweight) %>% 
+             `Overweight/obese` = overweight) %>% view()
       knitr::kable(., "latex", booktabs = TRUE, format.args = list(big.mark = ","))
     
     # cleanup
-    rm(temp, pr)
+    rm(temp, pr, temp2)
 
 ## END SCRIPT ## ---------------------------------------------------------------

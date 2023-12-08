@@ -701,4 +701,13 @@ jf$jsave(filename = "ra_irsd3.png",
          square_size = 1200,
          dpi = 300)
 
+# factor 4
+temp_fun(cur_list$summ_latent4$perc)+
+  labs(title = "Combined PW")
+jf$jsave(filename = "ra_irsd4.png",
+         base_folder = "out",
+         square = F,
+         square_size = 1200,
+         dpi = 300)
+
 ## END SCRIPT ## ---------------------------------------------------------------
