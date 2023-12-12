@@ -15,6 +15,7 @@ library(gridExtra)
 library(Matrix)
 library(spdep)
 library(corrplot)
+library(GGally)
 rm(list = ls())
 
 # load functions

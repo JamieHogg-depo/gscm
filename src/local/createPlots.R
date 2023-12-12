@@ -36,25 +36,50 @@ jf$jsave(filename = paste0("pc_loadings.png"),
          square_size = 1200,
          dpi = 300)
 
-## Pairs plot - modelled factors and principal components ## -------------------
+## Pairs plot - rank sum, modeled indices and principal components ## ----------
 
-data.frame(raw_RS = raw_RS, 
-           PC1 = pr$x[,1],
-           PC2 = pr$x[,2],
-           F1 = cur_list$summ_latent1$raww$point,
-           F2 = cur_list$summ_latent2$raww$point,
-           Combined = cur_list$summ_latent3$raww$point,
+data.frame(raw_RS = cut_number(raw_RS, n = 100, label = FALSE), 
+           PC1 = cut_number(pr$x[,1], n = 100, label = FALSE),
+           PC2 = cut_number(pr$x[,2], n = 100, label = FALSE),
+           F1 = cur_list$summ_latent1$perc$point,
+           F2 = cur_list$summ_latent2$perc$point,
+           Combined = cur_list$summ_latent3$perc$point,
+           CombinedPW = cur_list$summ_latent4$perc$point,
            ra = census$ra_sa2_3c) %>% 
   GGally::ggpairs(.,
-                  columns = 1:6,
+                  columns = 1:7,
                   #ggplot2::aes(color = ra)
-                  columnLabels = c("Rank Sum", "PC1", "PC2",
-                                   "Factor 1",
-                                   "Factor 2",
-                                   "Combined"))+
+                  columnLabels = c("Rank Sum", 
+                                   "PC1", 
+                                   "PC2",
+                                   "Index 1",
+                                   "Index 2",
+                                   "Index 3 -\nCombined",
+                                   "Index 3 -\nCombined PW"),
+                  lower = list(continuous = wrap("points", size=0.05)))+
   theme_bw()+
   theme(text = element_text(size = 8))
 jf$jsave(filename = paste0("pairs_pc.png"),
+         base_folder = "out",
+         square = T,
+         square_size = 1200,
+         dpi = 300)
+
+## Pairs plot - modeled indices ## ---------------------------------------------
+
+data.frame(F1 = cur_list$summ_latent1$perc$point,
+           F2 = cur_list$summ_latent2$perc$point,
+           Combined = cur_list$summ_latent3$perc$point,
+           CombinedPW = cur_list$summ_latent4$perc$point) %>% 
+  GGally::ggpairs(.,
+                  columnLabels = c("Index 1",
+                                   "Index 2",
+                                   "Index 3 -\nCombined",
+                                   "Index 3 -\nCombined PW"),
+                  lower = list(continuous = wrap("points", size=0.05)))+
+  theme_bw()+
+  theme(text = element_text(size = 8))
+jf$jsave(filename = paste0("pairsperc_indexonly.png"),
          base_folder = "out",
          square = T,
          square_size = 1200,
