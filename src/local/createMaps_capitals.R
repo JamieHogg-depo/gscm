@@ -28,10 +28,6 @@ mapping_data %>%
   scale_fill_viridis_c(begin = 0, end = 1, 
                        direction = -1,
                        option = "F")+
-  geom_sf(data = aus_border, aes(geometry = geometry), 
-          colour = "black", fill = NA, size = 0.2)+
-  geom_sf(data = state_border, aes(geometry = geometry), 
-          colour = "black", fill = NA, size = 0.1)+
   labs(fill = "Percentiles",
        title = lims$city[jkl])+
   guides(fill = guide_colourbar(barwidth = 13, 
