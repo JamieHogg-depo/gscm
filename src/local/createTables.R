@@ -29,6 +29,20 @@ getMedQuant <- function(x, rr){
   paste0(median, " (", q25, ", ", q75, ")")
 }
 
+reLabSS <- function(.data){
+  .data %>% 
+    mutate(Shared = case_when(
+      Shared == 2 ~ "LCAR",
+      Shared == 1 ~ "ICAR",
+      Shared == 0 ~ "IID",
+    ),
+    Specific = case_when(
+      Specific == 2 ~ "LCAR",
+      Specific == 1 ~ "ICAR",
+      Specific == 0 ~ "IID",
+    ))
+}
+
 # RF full names
 lookup <- data.frame(rf = c("activityleis", 
                             "activityleiswkpl",
@@ -53,6 +67,7 @@ rr <- 2
 data %>% 
   summarise_all(list(min = ~sprintf(min(.), fmt = paste0('%#.',rr,'f')),
                      q25 = ~sprintf(quantile(., probs = 0.25), fmt = paste0('%#.',rr,'f')),
+                     mean = ~sprintf(mean(.), fmt = paste0('%#.',rr,'f')),
                      median = ~sprintf(median(.), fmt = paste0('%#.',rr,'f')),
                      q75 = ~sprintf(quantile(., probs = 0.75), fmt = paste0('%#.',rr,'f')),
                      max = ~sprintf(max(.), fmt = paste0('%#.',rr,'f')))) %>% 
@@ -61,7 +76,8 @@ data %>%
   pivot_wider(names_from = metric, values_from = value) %>% 
   left_join(.,lookup) %>% 
   dplyr::select(-1) %>% 
-  relocate(rf_full)
+  relocate(rf_full)%>% 
+  knitr::kable(., "latex", booktabs = TRUE)
 
 rr <- 2
 data_sd %>% 
@@ -131,13 +147,13 @@ full_table <- list(latentvar_table, modelfit_table, hyper_table) %>%
   cbind(.,grid[which(grid$L == 2 & grid$model == "GSCM"),]) %>% 
   arrange(shared_latent_rho_fixed, specific_latent_rho_fixed)%>% 
   # Set some cells to NA
-  mutate(`rho[1]` = ifelse(shared_latent_rho_fixed == "LCAR", `rho[1]`, NA),
-         `rho[2]` = ifelse(shared_latent_rho_fixed == "LCAR", `rho[2]`, NA),
+  mutate(`rho[1]` = ifelse(shared_latent_rho_fixed == 2, `rho[1]`, NA),
+         `rho[2]` = ifelse(shared_latent_rho_fixed == 2, `rho[2]`, NA),
          `kappa[1]` = NA,
-         `kappa[2]` = ifelse(specific_latent_rho_fixed == "LCAR", `kappa[2]`, NA),
-         `kappa[3]` = ifelse(specific_latent_rho_fixed == "LCAR", `kappa[3]`, NA),
-         `kappa[4]` = ifelse(specific_latent_rho_fixed == "LCAR", `kappa[4]`, NA),
-         `kappa[5]` = ifelse(specific_latent_rho_fixed == "LCAR", `kappa[5]`, NA))
+         `kappa[2]` = ifelse(specific_latent_rho_fixed == 2, `kappa[2]`, NA),
+         `kappa[3]` = ifelse(specific_latent_rho_fixed == 2, `kappa[3]`, NA),
+         `kappa[4]` = ifelse(specific_latent_rho_fixed == 2, `kappa[4]`, NA),
+         `kappa[5]` = ifelse(specific_latent_rho_fixed == 2, `kappa[5]`, NA))
 
 # Table - model selection
 full_table %>% 
@@ -145,6 +161,7 @@ full_table %>%
   rename(Shared = shared_latent_rho_fixed,
          Specific = specific_latent_rho_fixed) %>% 
   arrange(WAIC) %>% 
+  reLabSS() %>% 
   knitr::kable(., "latex", booktabs = TRUE)
 
 # Table - sigma
@@ -152,6 +169,7 @@ full_table %>%
   dplyr::select(shared_latent_rho_fixed, specific_latent_rho_fixed, `sigma[1]`:`sigma[5]`) %>% 
   rename(Shared = shared_latent_rho_fixed,
          Specific = specific_latent_rho_fixed) %>% 
+  reLabSS() %>% 
   knitr::kable(., "latex", booktabs = TRUE)
 
 # Table - SA parameters
@@ -160,12 +178,13 @@ full_table %>%
   dplyr::select(-`kappa[1]`) %>% 
   rename(Shared = shared_latent_rho_fixed,
          Specific = specific_latent_rho_fixed) %>% 
+  reLabSS() %>% 
   knitr::kable(., "latex", booktabs = TRUE)
 
 ## Factor loadings table - measurement error ## --------------------------------
 
 # ME
-tf = 15
+tf = 16
 point <- sprintf(out_all[[tf]]$summ_loadings$point, fmt = paste0('%#.2f'))
 lower <- sprintf(out_all[[tf]]$summ_loadings$lower, fmt = paste0('%#.2f'))
 upper <- sprintf(out_all[[tf]]$summ_loadings$upper, fmt = paste0('%#.2f'))
@@ -177,7 +196,7 @@ me <- as.data.frame(matrix(paste0(point, " (", lower, ", ", upper, ")"), nrow = 
 rm(tf, point, lower, upper)
 
 # no ME
-tf = 24
+tf = 1
 point <- sprintf(out_all[[tf]]$summ_loadings$point, fmt = paste0('%#.2f'))
 lower <- sprintf(out_all[[tf]]$summ_loadings$lower, fmt = paste0('%#.2f'))
 upper <- sprintf(out_all[[tf]]$summ_loadings$upper, fmt = paste0('%#.2f'))
@@ -194,7 +213,7 @@ rm(f2, f1)
 ## Factor loadings table - multifactor ## --------------------------------------
 
 # Two factor
-tf = 10
+tf = 11
 point <- sprintf(out_all[[tf]]$summ_loadings$point, fmt = paste0('%#.2f'))
 lower <- sprintf(out_all[[tf]]$summ_loadings$lower, fmt = paste0('%#.2f'))
 upper <- sprintf(out_all[[tf]]$summ_loadings$upper, fmt = paste0('%#.2f'))
@@ -206,7 +225,7 @@ f2 <- as.data.frame(matrix(paste0(point, " (", lower, ", ", upper, ")"), nrow = 
 rm(tf, point, lower, upper)
 
 # One factor
-tf = 9
+tf = 10
 point <- sprintf(out_all[[tf]]$summ_loadings$point, fmt = paste0('%#.2f'))
 lower <- sprintf(out_all[[tf]]$summ_loadings$lower, fmt = paste0('%#.2f'))
 upper <- sprintf(out_all[[tf]]$summ_loadings$upper, fmt = paste0('%#.2f'))
@@ -222,7 +241,7 @@ rm(f2, f1)
 
 ## FINAL MODEL - FACTOR LOADINGS ## --------------------------------------------
 
-tf = 4
+tf = 5
 point <- sprintf(out_all[[tf]]$summ_loadings$point, fmt = paste0('%#.2f'))
 lower <- sprintf(out_all[[tf]]$summ_loadings$lower, fmt = paste0('%#.2f'))
 upper <- sprintf(out_all[[tf]]$summ_loadings$upper, fmt = paste0('%#.2f'))
@@ -242,32 +261,37 @@ rm(tf, point, lower, upper)
     rf_point_perc <- bind_cols(lapply(y_mats$point[,-c(1,2)], ggplot2::cut_number, n = 100, labels = FALSE))
     rf_se_perc <- bind_cols(lapply(y_mats$sd[,-c(1,2)], ggplot2::cut_number, n = 100, labels = FALSE))
     names(rf_se_perc) <- paste0(names(rf_se_perc), "_se")
+    rf_cv <- 100*(y_mats$sd[,-c(1,2)]/y_mats$point[,-c(1,2)])
+    names(rf_cv) <- paste0(names(rf_cv), "_cv")
     
     # make dataset of top areas
     temp2 <- list(
       rf_point_perc %>% 
         cbind(.,rf_se_perc) %>%
+        cbind(.,rf_cv) %>%
         mutate(perc95 = raw_RS) %>% 
         cbind(.,map_sa2) %>% 
         left_join(.,global_obj$census) %>% 
         slice_max(perc95, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "ra_sa2", 1:10),
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "ra_sa2",activityleiswkpl, alcohol, diet, overweight, smoking),
       
       rf_point_perc %>% 
         cbind(.,rf_se_perc) %>%
+        cbind(.,rf_cv) %>%
         mutate(perc95 = pr$x[,1]) %>% 
         cbind(.,map_sa2) %>% 
         left_join(.,global_obj$census) %>% 
         slice_max(perc95, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "ra_sa2", 1:10),
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking),
       
       rf_point_perc %>% 
         cbind(.,rf_se_perc) %>%
+        cbind(.,rf_cv) %>%
         mutate(perc95 = pr$x[,2]) %>% 
         cbind(.,map_sa2) %>% 
         left_join(.,global_obj$census) %>% 
-        slice_max(perc95, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "ra_sa2", 1:10),
+        slice_max(perc95, n = 4, with_ties = FALSE) %>%
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking),
       
       cur_list$probs$latent1 %>% 
         cbind(.,cur_list$summ_latent1$perc) %>% 
@@ -275,8 +299,9 @@ rm(tf, point, lower, upper)
         left_join(.,global_obj$census) %>% 
         cbind(.,rf_point_perc) %>% 
         cbind(.,rf_se_perc) %>%
+        cbind(.,rf_cv) %>%
         slice_max(perc95, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", 50:58),
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking),
       
       cur_list$probs$latent2 %>% 
         cbind(.,cur_list$summ_latent2$perc) %>%
@@ -284,8 +309,9 @@ rm(tf, point, lower, upper)
         left_join(.,global_obj$census) %>% 
         cbind(.,rf_point_perc) %>%
         cbind(.,rf_se_perc) %>%
+        cbind(.,rf_cv) %>%
         slice_max(perc95, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", 50:58),
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking),
       
       cur_list$probs$latent3 %>% 
         cbind(.,cur_list$summ_latent3$perc) %>%
@@ -293,8 +319,9 @@ rm(tf, point, lower, upper)
         left_join(.,global_obj$census) %>% 
         cbind(.,rf_point_perc) %>%
         cbind(.,rf_se_perc) %>%
+        cbind(.,rf_cv) %>%
         slice_max(perc95, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", 50:58),
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking),
       
       cur_list$probs$latent4 %>% 
         cbind(.,cur_list$summ_latent4$perc) %>%
@@ -302,8 +329,9 @@ rm(tf, point, lower, upper)
         left_join(.,global_obj$census) %>% 
         cbind(.,rf_point_perc) %>%
         cbind(.,rf_se_perc) %>%
+        cbind(.,rf_cv) %>%
         slice_max(perc95, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", 50:58)
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking)
     ) %>% 
       bind_rows(.id = "Index") %>% 
       group_by(Index) %>% 

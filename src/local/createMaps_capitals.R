@@ -7,9 +7,11 @@ mapping_data <- data.frame(f1 = cur_list$summ_latent1$perc$point,
                            fcerp = cur_list$summ_latent4$perc$point,
                            alcohol = cut_number(cur_list$data$y$alcohol, 100, labels = F),
                            smoking = cut_number(cur_list$data$y$smoking, 100, labels = F),
-                           overweight = cut_number(cur_list$data$y$overweight, 100, labels = F)) %>% 
+                           overweight = cut_number(cur_list$data$y$overweight, 100, labels = F),
+                           activity = cut_number(cur_list$data$y$activityleiswkpl, 100, labels = F),
+                           erp = cut_number(cur_list$data$census$N_persons, 100, labels = F)) %>% 
   cbind(.,map_sa2) %>% 
-  pivot_longer(cols = f1:overweight, names_to = "type", values_to = "y") %>% 
+  pivot_longer(cols = f1:erp, names_to = "type", values_to = "y") %>% 
   st_as_sf() %>%
   st_transform(4326)
 
@@ -17,7 +19,9 @@ mapping_data <- data.frame(f1 = cur_list$summ_latent1$perc$point,
 for(jkl in 1:8){
 
 mapping_data %>% 
-  mutate(type = fct_relevel(as.factor(type), c("alcohol", "smoking", "overweight", "f1", "f2", "fc", "fcerp"))) %>% 
+  filter(type != "activity") %>% 
+  mutate(type = fct_relevel(as.factor(type), c("alcohol", "smoking", "overweight", "erp", 
+                                               "f1", "f2", "fc", "fcerp"))) %>% 
   ggplot()+
   theme_void()+
   geom_sf(aes(fill = y), col = NA)+
@@ -42,13 +46,15 @@ mapping_data %>%
   facet_wrap(.~type, labeller = labeller(type = c(alcohol = "Risky\nAlcohol\nConsumption",
                                                   smoking = "Current\nSmoking",
                                                   overweight = "Overweight/\nobese",
-                                                  f1 = "Index:\nFactor 1",
-                                                  f2 = "Index:\nFactor 2",
-                                                  fc = "Index:\nCombined",
-                                                  fcerp = "Index:\nCombined\nERP weighted")))
+                                                  erp = "Population",
+                                                  f1 = "Index 1",
+                                                  f2 = "Index 2",
+                                                  fc = "Index 3:\nCombined",
+                                                  fcerp = "Index 4:\nPW Combined")),
+             nrow = 2)
 jf$jsave(filename = paste0("map_perc_capital_", lims$city[jkl], ".png"), 
          base_folder = "out",
-         square = T,
+         square = F,
          square_size = 1200,
          dpi = 300)
 
