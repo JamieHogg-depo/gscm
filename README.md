@@ -8,7 +8,7 @@ The Health Determinants for Cancer Indexes for Areas (HDCIA) product are availab
 
 - `SA2_2016`: The 2016 9-digit SA2 codes
 
-Plus the following 6 columns for each of the four indices (`Index1_*` - `Index1_*`)
+Plus the following 6 columns for each of the four indices (`Index1_*` - `Index4_*`)
 
 - `*_point`: Posterior mean
 - `*_lower`: Lower limit of 95% highest posterior density interval (HPDI)
@@ -17,7 +17,7 @@ Plus the following 6 columns for each of the four indices (`Index1_*` - `Index1_
 - `*_Prob_PercentileAbove95`: Probability that posterior percentile is above 95th
 - `*_Prob_PercentileAbove99`: Probability that posterior percentile is above 99th
 
-And the following 3 columns for each of the four scores (`Scores1_*` - `Scores1_*`)
+And the following 3 columns for each of the four scores (`Scores1_*` - `Scores4_*`)
 
 - `*_point`: Posterior mean
 - `*_lower`: Lower limit of 95% highest posterior density interval (HPDI)

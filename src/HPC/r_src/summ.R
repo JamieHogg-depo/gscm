@@ -106,6 +106,9 @@ if(ll_out$cur_model_spec$L > 1){
 
 # Exceedance probabilities
 ll_out$EP <- apply(draws$z>0, c(2,3), mean)
+if(ll_out$cur_model_spec$L > 1){
+	ll_out$EP <- cbind(ll_out$EP, apply((draws$z[,,1] + draws$z[,,2])>0, 2, mean))
+}
 
 # LOOCV
 ll_out$loo <- rstan::loo(ll_out$fit)
@@ -153,6 +156,9 @@ ll_out$fit <- NULL
 
 # Save traces
 #saveRDS(ll_out$trace, paste0(base_folder, "/outputs/", cur_date, "/r/ix", grid_ix, "_", cc, "_tr.rds"))
+
+# Save latent draws
+saveRDS(ll_out$latent_draws, paste0(base_folder, "/outputs/", cur_date, "/r/ix", grid_ix, "_", cc, "_ld.rds"))
 
 # Save output
 ll_out$latent_draws <- NULL

@@ -62,8 +62,8 @@ for_stan <- jf$prep4MLCAR(W)
 icar_for_stan <- jf$prep4ICAR(W)
 
 # Define grid of values
-grid <- expand.grid(L = c(1,2),
-                    shared_latent_rho_fixed = c(0,1,2),
+grid <- expand.grid(L = 2, #c(1,2),
+                    shared_latent_rho_fixed = 2, #c(0,1,2),
                     specific_latent_rho_fixed = 0, #c(0,1,2),
 					kappa_fixed = 0.9,
                     gamma_var_prior = 1,
@@ -124,31 +124,43 @@ if(d$L == 1){
 						Lambda_ld=c(-0.2,-0.46,-0.29,0.04)+runif(4,-.01,.01))
 	  return(init.values)
 	}
+	
+	# fit model
+	m_s <- Sys.time()
+	ll_out$fit <- sampling(object = comp, 
+					#pars = c("Z_z", "mu"),
+					pars = "Z_z",
+					include = FALSE,
+					data = d, 
+					init = init_fun,
+					init_r = 0.01,
+					#refresh = 0, 				
+					chains = chains,
+					control = list(adapt_delta = 0.95,
+									max_treedepth = 12),
+					iter = iter, warmup = warmup,
+					thin = thin,
+					cores = chains)
+	(ll_out$rt <- as.numeric(Sys.time() - m_s, units = "mins"))
 }else{
-	init_fun = function() {
-	  init.values<-list(Lambda_d = runif(d$L,-.01,.01),
-						Lambda_ld = runif(d$M,-.01,.01))
-	  return(init.values)
-	}
-}
 
-# fit model
-m_s <- Sys.time()
-ll_out$fit <- sampling(object = comp, 
-                #pars = c("Z_z", "mu"),
-				pars = "Z_z",
-                include = FALSE,
-                data = d, 
-                init = init_fun,
-				init_r = 0.01,
-				#refresh = 0, 				
-                chains = chains,
-                control = list(adapt_delta = 0.95,
-								max_treedepth = 12),
-                iter = iter, warmup = warmup,
-				thin = thin,
-                cores = chains)
-(ll_out$rt <- as.numeric(Sys.time() - m_s, units = "mins"))
+	# fit model
+	m_s <- Sys.time()
+	ll_out$fit <- sampling(object = comp, 
+					#pars = c("Z_z", "mu"),
+					pars = "Z_z",
+					include = FALSE,
+					data = d, 
+					init = 0,
+					#refresh = 0, 				
+					chains = chains,
+					control = list(adapt_delta = 0.95,
+									max_treedepth = 12),
+					iter = iter, warmup = warmup,
+					thin = thin,
+					cores = chains)
+	(ll_out$rt <- as.numeric(Sys.time() - m_s, units = "mins"))
+}
 
 # Summarise draws
 ll_out$summ <- summarise_draws(ll_out$fit) %>% 

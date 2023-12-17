@@ -6,12 +6,12 @@ which_m='GSCM'
 all_aus=1
 
 # Model
-for grid_ix in 5 #{1..18}
+for grid_ix in {1..18}
 do
 
 	# get the current date
 	cr_date=$(date +%Y%m%d)
-	cur_date=$cr_date'1'
+	cur_date=$cr_date'2'
 
 	# create directories
 	mkdir -p $base_folder/sub_src/$cur_date
