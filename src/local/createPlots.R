@@ -487,10 +487,10 @@ rm(se_rank_2, eqv_rank_2, full_inset_plt, ix_bfm, ix_gscm, lay)
 
 grid %>% 
   filter(model == "GSCM",
-         shared_latent_rho_fixed == 2,
-         specific_latent_rho_fixed == 2)
-ix_l1 <- 9 #17
-ix_l2 <- 10 #18
+         shared_latent_rho_fixed == "LCAR",
+         specific_latent_rho_fixed == "LCAR")
+ix_l1 <- 10 #17
+ix_l2 <- 11 #18
 
 #### equivalence - raw - factor 1
 eqv_raw_1 <- cbind(
@@ -603,6 +603,195 @@ full_inset_plt <- ggpubr::as_ggplot(full_inset_plt)+
 
 ## save
 jf$jsave(filename = "equiv_rank_multfactors.png",
+         plot = full_inset_plt,
+         base_folder = "out",
+         square = F,
+         square_size = 1200,
+         dpi = 300)
+
+## Cleanup 
+rm(se_rank_1, eqv_rank_1, full_inset_plt)
+
+## Multiple shared components - IID feature specific priors ## -----------------
+
+grid %>% 
+  filter(model == "GSCM",
+         shared_latent_rho_fixed == "LCAR",
+         specific_latent_rho_fixed == "IID")
+ix_l1 <- 15
+ix_l2 <- 16
+
+#### equivalence - raw - factor 1
+eqv_raw_1 <- cbind(
+  out_all[[ix_l1]]$summ_latent1$raww %>% 
+    setNames(paste0("l1_", names(.))),
+  out_all[[ix_l2]]$summ_latent1$raww %>% 
+    setNames(paste0("l2_", names(.)))
+) %>% 
+  ggplot(aes(y = l1_point, ymin = l1_lower, ymax = l1_upper,
+             x = l2_point, xmin = l2_lower, xmax = l2_upper))+
+  theme_bw()+
+  geom_errorbar(col = "grey")+
+  geom_errorbarh(col = "grey")+
+  geom_point()+
+  geom_abline(col = "red")+
+  labs(y = "Factor 1 - raw scores (1-factor GSCM)",
+       x = "Factor 1 - raw scores (2-factor GSCM)")+
+  theme(text = element_text(size = 8))
+
+## se - raw - factor 1
+se_raw_1 <- cbind(
+  out_all[[ix_l1]]$summ_latent1$raww %>% 
+    setNames(paste0("l1_", names(.))),
+  out_all[[ix_l2]]$summ_latent1$raww %>% 
+    setNames(paste0("l2_", names(.)))
+) %>% 
+  dplyr::select(l1_se, l2_se) %>% 
+  arrange(l2_se) %>% 
+  setNames(c("1-factor GSCM",
+             "2-factor GSCM")) %>% 
+  mutate(x = 1:nrow(.)) %>% 
+  pivot_longer(-x) %>% 
+  ggplot(aes(y = value, x = x,
+             col = name))+
+  theme_bw()+
+  geom_point()+
+  labs(y = "Posterior standard error (raw factor 1)",
+       x = "",
+       col = "")+
+  theme(text = element_text(size = 8),
+        legend.position = "bottom")
+
+## Combine
+lay <- rbind(c(1,2))
+full_inset_plt <- gridExtra::arrangeGrob(grobs = list(eqv_raw_1, se_raw_1), 
+                                         layout_matrix  = lay)
+full_inset_plt <- ggpubr::as_ggplot(full_inset_plt)+
+  cowplot::draw_plot_label(label = c("(a)", "(b)"), size = 8,
+                           x = c(0, 0.5), y = c(1, 1)) # Add labels
+
+## save
+jf$jsave(filename = "equiv_raw_multfactors_IID.png",
+         plot = full_inset_plt,
+         base_folder = "out",
+         square = F,
+         square_size = 1200,
+         dpi = 300)
+
+## Cleanup 
+rm(se_raw_1, eqv_raw_1, full_inset_plt)
+
+#### equivalence - perc - factor 1
+eqv_perc_1 <- cbind(
+  out_all[[ix_l1]]$summ_latent1$perc %>% 
+    setNames(paste0("l1_", names(.))),
+  out_all[[ix_l2]]$summ_latent1$perc %>% 
+    setNames(paste0("l2_", names(.)))
+) %>% 
+  ggplot(aes(y = l1_point, ymin = l1_lower, ymax = l1_upper,
+             x = l2_point, xmin = l2_lower, xmax = l2_upper))+
+  theme_bw()+
+  geom_errorbar(col = "grey")+
+  geom_errorbarh(col = "grey")+
+  geom_point()+
+  geom_abline(col = "red")+
+  labs(y = "Factor 1 - perc (1-factor GSCM)",
+       x = "Factor 1 - perc (2-factor GSCM)")+
+  theme(text = element_text(size = 8))
+
+## se - perc - factor 1
+se_perc_1 <- cbind(
+  out_all[[ix_l1]]$summ_latent1$perc %>% 
+    setNames(paste0("l1_", names(.))),
+  out_all[[ix_l2]]$summ_latent1$perc %>% 
+    setNames(paste0("l2_", names(.)))
+) %>% 
+  dplyr::select(l1_se, l2_se) %>% 
+  arrange(l2_se) %>% 
+  setNames(c("1-factor GSCM",
+             "2-factor GSCM")) %>% 
+  mutate(x = 1:nrow(.)) %>% 
+  pivot_longer(-x) %>% 
+  ggplot(aes(y = value, x = x,
+             col = name))+
+  theme_bw()+
+  geom_point()+
+  labs(y = "Posterior standard error (perc factor 1)",
+       x = "",
+       col = "")+
+  theme(text = element_text(size = 8),
+        legend.position = "bottom")
+
+## Combine
+lay <- rbind(c(1,2))
+full_inset_plt <- gridExtra::arrangeGrob(grobs = list(eqv_perc_1, se_perc_1), 
+                                         layout_matrix  = lay)
+full_inset_plt <- ggpubr::as_ggplot(full_inset_plt)+
+  cowplot::draw_plot_label(label = c("(a)", "(b)"), size = 8,
+                           x = c(0, 0.5), y = c(1, 1)) # Add labels
+
+## save
+jf$jsave(filename = "equiv_perc_multfactors_IID.png",
+         plot = full_inset_plt,
+         base_folder = "out",
+         square = F,
+         square_size = 1200,
+         dpi = 300)
+
+## Cleanup 
+rm(se_perc_1, eqv_perc_1, full_inset_plt)
+
+#### equivalence - rank - factor 1
+eqv_rank_1 <- cbind(
+  out_all[[ix_l1]]$summ_latent1$rankk %>% 
+    setNames(paste0("l1_", names(.))),
+  out_all[[ix_l2]]$summ_latent1$rankk %>% 
+    setNames(paste0("l2_", names(.)))
+) %>% 
+  ggplot(aes(y = l1_point, ymin = l1_lower, ymax = l1_upper,
+             x = l2_point, xmin = l2_lower, xmax = l2_upper))+
+  theme_bw()+
+  geom_errorbar(col = "grey")+
+  geom_errorbarh(col = "grey")+
+  geom_point()+
+  geom_abline(col = "red")+
+  labs(y = "Factor 1 - rank (1-factor GSCM)",
+       x = "Factor 1 - rank (2-factor GSCM)")+
+  theme(text = element_text(size = 8))
+
+## se - rank - factor 1
+se_rank_1 <- cbind(
+  out_all[[ix_l1]]$summ_latent1$rankk %>% 
+    setNames(paste0("l1_", names(.))),
+  out_all[[ix_l2]]$summ_latent1$rankk %>% 
+    setNames(paste0("l2_", names(.)))
+) %>% 
+  dplyr::select(l1_se, l2_se) %>% 
+  arrange(l2_se) %>% 
+  setNames(c("1-factor GSCM",
+             "2-factor GSCM")) %>% 
+  mutate(x = 1:nrow(.)) %>% 
+  pivot_longer(-x) %>% 
+  ggplot(aes(y = value, x = x,
+             col = name))+
+  theme_bw()+
+  geom_point()+
+  labs(y = "Posterior standard error (rank factor 1)",
+       x = "",
+       col = "")+
+  theme(text = element_text(size = 8),
+        legend.position = "bottom")
+
+## Combine
+lay <- rbind(c(1,2))
+full_inset_plt <- gridExtra::arrangeGrob(grobs = list(eqv_rank_1, se_rank_1), 
+                                         layout_matrix  = lay)
+full_inset_plt <- ggpubr::as_ggplot(full_inset_plt)+
+  cowplot::draw_plot_label(label = c("(a)", "(b)"), size = 8,
+                           x = c(0, 0.5), y = c(1, 1)) # Add labels
+
+## save
+jf$jsave(filename = "equiv_rank_multfactors_IID.png",
          plot = full_inset_plt,
          base_folder = "out",
          square = F,
