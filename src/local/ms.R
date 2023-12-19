@@ -17,6 +17,14 @@ library(spdep)
 library(corrplot)
 library(GGally)
 rm(list = ls())
+load_presaved <- TRUE
+
+## Load presaved environment ##
+if(load_presaved){
+#save(list = ls(), file = "data/presaved.Rdata")
+load(file = "data/presaved.Rdata")
+}else{
+##
 
 # load functions
 source("src/local/funs.R")
@@ -144,3 +152,5 @@ cur_list$probs$latent4 <- jf$getProbs(z_erp_comb)
 raw_RS <- order(order(rowSums(apply(data, 2, FUN = function(x)order(order(x))))))
 
 ## END SCRIPT ## ---------------------------------------------------------------
+
+}

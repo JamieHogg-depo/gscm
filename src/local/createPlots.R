@@ -236,10 +236,10 @@ rm(data2)
 
 grid %>% 
   filter(L == 2,
-         shared_latent_rho_fixed == 2,
-         specific_latent_rho_fixed == 0)
-ix_bfm <- 24
-ix_gscm <- 15
+         shared_latent_rho_fixed == "LCAR",
+         specific_latent_rho_fixed == "IID")
+ix_bfm <- 1
+ix_gscm <- 16
 
 #### equivalence - raw - factor 1
 eqv_raw_1 <- cbind(
@@ -248,6 +248,9 @@ eqv_raw_1 <- cbind(
   out_all[[ix_bfm]]$summ_latent1$raww %>% 
     setNames(paste0("bf_", names(.)))
 ) %>% 
+  mutate(abs = abs(gscm_point - bf_point),
+         ra = cur_list$data$census$ra_sa2,
+         irsd = cur_list$data$census$ABS_irsd_decile_nation_complete) %>% 
   ggplot(aes(y = gscm_point, ymin = gscm_lower, ymax = gscm_upper,
              x = bf_point, xmin = bf_lower, xmax = bf_upper))+
   theme_bw()+
