@@ -2,7 +2,13 @@
 
 This repository contains the code and modelled results described in the manuscript "Generalising the Shared Component Model: Creating the Health Determinants for Cancer Indexes for Areas" by James Hogg, Jessica Cameron, Susanna Cramb, Peter Baade and Kerrie Mengersen.
 
-The Health Determinants for Cancer Indexes for Areas (HDCIA) product are available in long-format upon request. This dataset contains the following 37 columns. NOTE: Index 1 and 2 are provided for completeness, Index 3 is the most applicable. 
+### Input features
+
+The input features are available in `InputFeatures.csv`. The dataset contains a 11 columns, with the first identifying the 2016 SA2s. The remaining columns are estimates and standard deviations (SD) for the five cancer risk factor estimates. 
+
+### HDCIA product
+
+The Health Determinants for Cancer Indexes for Areas (HDCIA) product are available in `HDCIAProduct.csv`. This dataset contains the following 37 columns. NOTE: Index 1 and 2 are provided for completeness, Index 3 is the most applicable. 
 
 <!--from the authors. in the dataset `ModelledEstimates.csv`.--->
 
