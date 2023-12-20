@@ -581,3 +581,23 @@ jf$getProbs <- function(draws){
   
 }
 
+## Get percentiles using states ## ---------------------------------------------
+
+jf$FstatePerc <- function(yy){
+  
+  StatePerc <- function(x, ps_state) {
+    unique_states <- unique(ps_state)
+    pp <- numeric(length(x))
+    
+    # Loop through each state and calculate percentiles
+    for (state in unique_states) {
+      state_indices <- which(ps_state == state)
+      pp[state_indices] <- cut_number(x[state_indices], n = 100, labels = FALSE)
+    }
+    return(pp)
+  }
+  
+  jf$getResultsData(t(pbapply::pbapply(yy, 1, FUN = function(row) StatePerc(row, cur_list$data$census$ps_state)))) %>% 
+    mutate(ps_state = cur_list$data$census$ps_state) %>% relocate(ps_state)
+}
+

@@ -151,6 +151,13 @@ cur_list$probs$latent4 <- jf$getProbs(z_erp_comb)
 
 raw_RS <- order(order(rowSums(apply(data, 2, FUN = function(x)order(order(x))))))
 
+## State percentiles ## --------------------------------------------------------
+
+cur_list$summ_latent1$perc_state <- jf$FstatePerc(latent_draws[,,1])
+cur_list$summ_latent2$perc_state <- jf$FstatePerc(latent_draws[,,2])
+cur_list$summ_latent3$perc_state <- jf$FstatePerc(z_comb)
+cur_list$summ_latent4$perc_state <- jf$FstatePerc(z_erp_comb)
+
 ## END SCRIPT ## ---------------------------------------------------------------
 
 }

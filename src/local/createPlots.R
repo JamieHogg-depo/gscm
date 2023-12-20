@@ -871,6 +871,31 @@ data.frame(f1 = out_all[[chose_ix]]$summ_latent1$raww$point,
                         breaks = c(0,0.2,0.25,0.5,0.75,0.8,1),
                         labels = as.character(c(0,0.2,"",0.5,"",0.8,1)))
 
+## S-plot ## -------------------------------------------------------------------
+
+foo <- function(x){
+  data.frame(point = cur_list[[paste0("summ_latent", x)]]$perc$point,
+             prob = cur_list$probs[[paste0("latent", x)]]$perc80)%>% 
+    ggplot(aes(y = prob, x = point,
+               col = prob))+
+    geom_point()+theme_bw()+
+    scale_color_viridis_c(begin = 0, end = 1,
+                          direction = -1,
+                          option = "A")+
+    labs(title = paste0("Index ", x),
+         y = "Posterior probability above the 80th percentile",
+         x = "Posterior median percentile")+
+    theme(text = element_text(size = 8),
+          legend.position = "none")
+  jf$jsave(filename = paste0("splot", x, ".png"),
+           base_folder = "out",
+           square = F,
+           square_size = 1200,
+           dpi = 300)
+}
+lapply(1:4, foo)
+
+
 ## Remoteness and IRSD ## ------------------------------------------------------
 
 temp_fun <- function(df){

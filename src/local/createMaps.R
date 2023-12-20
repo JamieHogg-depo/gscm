@@ -593,7 +593,7 @@ message("---- Finished ep")
 
 # SETUP
 mapping_data <- map_sa2 %>% 
-  mutate(value = cur_list$probs[[paste0("latent", jkl)]]$perc95) %>% 
+  mutate(value = cur_list$probs[[paste0("latent", jkl)]]$perc80) %>% 
   st_as_sf() %>%
   st_transform(4326)
 
@@ -603,7 +603,7 @@ base <- mapping_data %>%
   theme_void()+
   geom_sf(aes(fill = value), col = NA)+
   scale_fill_viridis_c(begin = 0, end = 1,
-                       limits = c(0.5,1),
+                       limits = c(0.6,1),
                        direction = -1,
                        option = "A")+
   geom_sf(data = aus_border, aes(geometry = geometry), 
@@ -617,7 +617,7 @@ base <- mapping_data %>%
 
 # Base map with legend
 (base_legend <- base +
-    labs(fill = "Probability above\n95th percentile")+
+    labs(fill = "Probability above\n80th percentile")+
     guides(fill = guide_colourbar(barwidth = 13, 
                                   title.position = "top",
                                   title.hjust = 0.5))+
