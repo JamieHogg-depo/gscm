@@ -354,7 +354,7 @@ cur_list[[paste0("summ_latent", jkl)]]$perc %>%
   geom_point()+
   theme(text = element_text(size = 8))+
   labs(x = "",
-       y = paste0("Factor ", jkl, " (percentilese)"))
+       y = paste0("Factor ", jkl, " (percentiles)"))
 jf$jsave(filename = paste0("cat_perc", jkl, ".png"), 
          base_folder = "out",
          square = T,
@@ -509,6 +509,98 @@ jf$jsave(filename = paste0("map_perc_cisize", jkl, ".png"),
 # cleanup
 rm(base, base_boxes, llegend, base_legend, mapping_data, lay, full_inset_plt)
 message("---- Finished perc_cisize")
+
+## Percentiles - state #### ----------------------------------------------------
+
+# caterpillar
+cur_list[[paste0("summ_latent", jkl)]]$perc_state %>% 
+  arrange(point) %>% 
+  ggplot(aes(y = point, ymin = lower, ymax = upper,
+             x = 1:nrow(.)))+theme_bw()+
+  geom_errorbar(col = "grey")+
+  geom_point()+
+  theme(text = element_text(size = 8))+
+  labs(x = "",
+       y = paste0("Factor ", jkl, " (state percentiles)"))
+jf$jsave(filename = paste0("cat_perc_state", jkl, ".png"), 
+         base_folder = "out",
+         square = T,
+         square_size = 1200,
+         dpi = 300)
+message("---- Finished cater perc state")
+
+# SETUP
+mapping_data <- cur_list[[paste0("summ_latent", jkl)]]$perc_state %>% 
+  cbind(.,map_sa2) %>% 
+  st_as_sf() %>%
+  st_transform(4326)
+
+# base map
+base <- mapping_data %>% 
+  ggplot()+
+  theme_void()+
+  geom_sf(aes(fill = point), col = NA)+
+  scale_fill_viridis_c(begin = 0, end = 1, 
+                       direction = -1,
+                       option = "F")+
+  geom_sf(data = aus_border, aes(geometry = geometry), 
+          colour = "black", fill = NA, size = 0.2)+
+  geom_sf(data = state_border, aes(geometry = geometry), 
+          colour = "black", fill = NA, size = 0.1)+
+  theme(legend.position = "none",
+        text = element_text(size = 8),
+        plot.title = element_text(margin = margin(0,0,2,0)),
+        plot.margin = unit(c(1,1,1,1), "mm"))
+
+# Base map with legend
+(base_legend <- base +
+    labs(fill = "State percentiles (posterior median)")+
+    guides(fill = guide_colourbar(barwidth = 13, 
+                                  title.position = "top",
+                                  title.hjust = 0.5))+
+    theme(legend.position = "bottom"))
+llegend <- ggpubr::get_legend(base_legend)
+
+# Base map with boxes
+base_boxes <- base
+for(i in 1:8){
+  base_boxes <- base_boxes + 
+    jf$addBoxLabel(i, color = "black", size = 0.2, textsize = 1.5)
+}
+
+# Create list of insets
+inset_list <- list()
+for(i in 1:8){
+  inset_list[[i]] <- base +
+    xlim(lims$xmin[i], lims$xmax[i]) +
+    ylim(lims$ymin[i], lims$ymax[i]) +
+    labs(title = lims$inset_labs[i])+
+    theme(panel.border = element_rect(colour = "black", size=1, fill=NA),
+          plot.title = element_text(margin = margin(0,0,2,0),
+                                    size = 5),
+          plot.margin = unit(c(1,1,1,1), "mm"))
+}
+inset_list <- Filter(Negate(is.null), inset_list)
+
+# create final list
+lay <- rbind(c(9,1,1,1,1,2),
+             c(5,1,1,1,1,3),
+             c(6,1,1,1,1,8),
+             c(4,10,10,10,10,7))
+full_inset_plt <- arrangeGrob(grobs = c(list(base_boxes), inset_list, list(llegend)), 
+                              layout_matrix  = lay,
+                              top = textGrob(top_label,gp=gpar(fontsize=8)))
+
+# save object
+jf$jsave(filename = paste0("map_perc_state", jkl, ".png"), 
+         base_folder = "out",
+         plot = full_inset_plt, square = F,
+         square_size = 1200,
+         dpi = 300)
+
+# cleanup
+rm(base, base_boxes, llegend, base_legend, mapping_data, lay, full_inset_plt)
+message("---- Finished perc state")
 
 ## EP #### ---------------------------------------------------------------------
 
