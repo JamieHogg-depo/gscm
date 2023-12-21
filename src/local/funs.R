@@ -557,28 +557,48 @@ jf$addBoxLabel <- function(i, color = "white", size = 0.5, textsize = 3){
 }
 
 ## getProbs ## -----------------------------------------------------------------
-
-jf$getProbs <- function(draws){
+#' @param perc (defaults to TRUE) if TRUE provides probabilities for 20, 80, 95, 99th percentile
+#' if FALSE provides probabilities for being ranked in the top 10, 22, 111, 444 
+jf$getProbs <- function(draws, perc = TRUE){
   
-  the_perc <- t(apply(draws, 1, ggplot2::cut_number, 
-                    n = 100, labels = FALSE))
-  
-  return(data.frame(
+  if(perc){
     
-    # EP above 99th percentile 
-    perc99 = colMeans(the_perc > 99),
+    out <- t(apply(draws, 1, ggplot2::cut_number, 
+                      n = 100, labels = FALSE))
     
-    # EP above 95th percentile 
-    perc95 = colMeans(the_perc > 95),
+    return(data.frame(
     
-    # EP above 80th percentile 
-    perc80 = colMeans(the_perc > 80),
+      # EP above 99th percentile 
+      perc99 = colMeans(out > 99),
+      
+      # EP above 95th percentile 
+      perc95 = colMeans(out > 95),
+      
+      # EP above 80th percentile 
+      perc80 = colMeans(out > 80)
     
-    # EP below 20th percentile 
-    perc20 = colMeans(the_perc < 20)
+    ))
     
-  ))
-  
+  }else{
+    
+    out <- t(apply(draws, 1, FUN = function(x)order(order(x))))
+    
+    return(data.frame(
+      # EP top 10 rank (0.5%)
+      rank10 = colMeans(out > (2221-10-1)),
+      
+      # EP top 20 rank (0.9%) 
+      rank20 = colMeans(out > (2221-20-1)),
+      
+      # EP top 100 rank (4.5%)
+      rank100 = colMeans(out > (2221-100-1)),
+      
+      # EP top 500 rank (22.5%)
+      rank500 = colMeans(out > (2221-500-1))
+      
+    ))
+    
+  }
 }
 
 ## Get percentiles using states ## ---------------------------------------------

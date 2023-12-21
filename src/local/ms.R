@@ -139,13 +139,17 @@ cur_list$EP <- cbind(cur_list$EP, apply(z_erp_comb > 0, 2, mean))
 
 ## Probabilities ## ------------------------------------------------------------
 
-cur_list$probs$latent1 <- jf$getProbs(latent_draws[,,1])
+# percentiles
+cur_list$probs$latent1_perc <- jf$getProbs(latent_draws[,,1])
+cur_list$probs$latent2_perc <- jf$getProbs(latent_draws[,,2])
+cur_list$probs$latent3_perc <- jf$getProbs(z_comb)
+cur_list$probs$latent4_perc <- jf$getProbs(z_erp_comb)
 
-cur_list$probs$latent2 <- jf$getProbs(latent_draws[,,2])
-
-cur_list$probs$latent3 <- jf$getProbs(z_comb)
-
-cur_list$probs$latent4 <- jf$getProbs(z_erp_comb)
+# ranks
+cur_list$probs$latent1_rank <- jf$getProbs(latent_draws[,,1], perc = FALSE)
+cur_list$probs$latent2_rank <- jf$getProbs(latent_draws[,,2], perc = FALSE)
+cur_list$probs$latent3_rank <- jf$getProbs(z_comb, perc = FALSE)
+cur_list$probs$latent4_rank <- jf$getProbs(z_erp_comb, perc = FALSE)
 
 ## Rank Sum Method ## ----------------------------------------------------------
 

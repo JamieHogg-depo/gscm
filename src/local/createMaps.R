@@ -2,11 +2,11 @@ for(jkl in 1:4){
   
   message(paste0("Round: ", jkl))
   if(jkl == 3){
-    top_label <- "Combined"
+    top_label <- "Index 3 - Combined"
   }else if(jkl == 4){
-    top_label <- "Combined - ERP weighted"
+    top_label <- "Index 4 - PW Combined"
   }else{
-    top_label <- paste0("Factor ", jkl)
+    top_label <- paste0("Index ", jkl)
   }
 
 ## Raw #### --------------------------------------------------------------------
