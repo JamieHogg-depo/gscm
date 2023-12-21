@@ -10,6 +10,8 @@ library(MASS)
 library(patchwork)
 library(readr)
 library(readxl)
+library(readr)
+library(openxlsx)
 library(grid)
 library(gridExtra)
 library(Matrix)
@@ -111,56 +113,98 @@ cur_list <- out_all[[sele]]
 # latent draws
 latent_draws <- readRDS(paste0(str_remove(files_fl[[sele]], ".rds"), "_ld.rds"))
 
-## Combined Index ## -----------------------------------------------------------
+# create other draws objects
+perc_draws <- list()
+rank_draws <- list()
+
+## Index 1 ## ------------------------------------------------------------------
+
+# draws
+perc_draws$i1 <- t(apply(latent_draws[,,1], 1, ggplot2::cut_number, n = 100, labels = FALSE))
+perc_draws$i1s <- t(pbapply::pbapply(latent_draws[,,1], 1, 
+                                     FUN = function(row) StateCalcs$perc(row, cur_list$data$census$ps_state)))
+
+rank_draws$i1 <- t(apply(latent_draws[,,1], 1, FUN = function(x)order(order(x))))
+rank_draws$i1s <- t(pbapply::pbapply(latent_draws[,,1], 1, 
+                                     FUN = function(row) StateCalcs$rank(row, cur_list$data$census$ps_state)))
+
+## Index 2 ## ------------------------------------------------------------------
+
+# draws
+perc_draws$i2 <- t(apply(latent_draws[,,2], 1, ggplot2::cut_number, n = 100, labels = FALSE))
+perc_draws$i2s <- t(pbapply::pbapply(latent_draws[,,2], 1, 
+                                     FUN = function(row) StateCalcs$perc(row, cur_list$data$census$ps_state)))
+
+rank_draws$i2 <- t(apply(latent_draws[,,2], 1, FUN = function(x)order(order(x))))
+rank_draws$i2s <- t(pbapply::pbapply(latent_draws[,,2], 1, 
+                                     FUN = function(row) StateCalcs$rank(row, cur_list$data$census$ps_state)))
+
+## Index 3 - Combined ## -------------------------------------------------------
 
 # weighted combo
 w <- apply(cur_list$summ_loadings$point^2, 2, sum)/sum(apply(cur_list$summ_loadings$point^2, 2, sum))
 z_comb <- w[1] * latent_draws[,,1] + w[2] * latent_draws[,,2]
 
+# draws
+perc_draws$i3 <- t(apply(z_comb, 1, ggplot2::cut_number, n = 100, labels = FALSE))
+perc_draws$i3s <- t(pbapply::pbapply(z_comb, 1, 
+                                     FUN = function(row) StateCalcs$perc(row, cur_list$data$census$ps_state)))
+
+rank_draws$i3 <- t(apply(z_comb, 1, FUN = function(x)order(order(x))))
+rank_draws$i3s <- t(pbapply::pbapply(z_comb, 1, 
+                                     FUN = function(row) StateCalcs$rank(row, cur_list$data$census$ps_state)))
+
 # summarise
 cur_list$summ_latent3$raww <- jf$getResultsData(z_comb)
-cur_list$summ_latent3$perc <- jf$getResultsData(t(apply(z_comb, 1, ggplot2::cut_number, n = 100, labels = FALSE)))
-cur_list$summ_latent3$rankk <- jf$getResultsData(t(apply(z_comb, 1, FUN = function(x)order(order(x)))))
+
+cur_list$summ_latent3$perc <- jf$getResultsData(perc_draws$i3)
+cur_list$summ_latent3$perc_s <- jf$getResultsData(perc_draws$i3s) %>% 
+  mutate(ps_state = cur_list$data$census$ps_state) %>% relocate(ps_state)
+
+cur_list$summ_latent3$rankk <- jf$getResultsData(rank_draws$i3)
+cur_list$summ_latent3$rankk_s <- jf$getResultsData(rank_draws$i3s) %>% 
+  mutate(ps_state = cur_list$data$census$ps_state) %>% relocate(ps_state)
+
 cur_list$EP[,3] <- apply(z_comb > 0, 2, mean)
 
 # cleanup
 rm(sele)
 
-## ERP weighted Combined index ## ----------------------------------------------
+## Index 4 - PW Combined ## ----------------------------------------------------
 
 # get the posterior draws
 z_erp_comb <- t(t(z_comb)*cur_list$data$census$N_persons)
 
+# draws
+perc_draws$i4 <- t(apply(z_erp_comb, 1, ggplot2::cut_number, n = 100, labels = FALSE))
+perc_draws$i4s <- t(pbapply::pbapply(z_erp_comb, 1, 
+                                     FUN = function(row) StateCalcs$perc(row, cur_list$data$census$ps_state)))
+
+rank_draws$i4 <- t(apply(z_erp_comb, 1, FUN = function(x)order(order(x))))
+rank_draws$i4s <- t(pbapply::pbapply(z_erp_comb, 1, 
+                                     FUN = function(row) StateCalcs$rank(row, cur_list$data$census$ps_state)))
+
 # summarise
 cur_list$summ_latent4$raww <- jf$getResultsData(z_erp_comb)
-cur_list$summ_latent4$perc <- jf$getResultsData(t(apply(z_erp_comb, 1, ggplot2::cut_number, n = 100, labels = FALSE)))
-cur_list$summ_latent4$rankk <- jf$getResultsData(t(apply(z_erp_comb, 1, FUN = function(x)order(order(x)))))
+
+cur_list$summ_latent4$perc <- jf$getResultsData(perc_draws$i4)
+cur_list$summ_latent4$perc_s <- jf$getResultsData(perc_draws$i4s) %>% 
+  mutate(ps_state = cur_list$data$census$ps_state) %>% relocate(ps_state)
+
+cur_list$summ_latent4$rankk <- jf$getResultsData(rank_draws$i4)
+cur_list$summ_latent4$rankk_s <- jf$getResultsData(rank_draws$i4s) %>% 
+  mutate(ps_state = cur_list$data$census$ps_state) %>% relocate(ps_state)
+
 cur_list$EP <- cbind(cur_list$EP, apply(z_erp_comb > 0, 2, mean))
 
-## Probabilities ## ------------------------------------------------------------
+## Probabilities above percentile or rank ## -----------------------------------
 
-# percentiles
-cur_list$probs$latent1_perc <- jf$getProbs(latent_draws[,,1])
-cur_list$probs$latent2_perc <- jf$getProbs(latent_draws[,,2])
-cur_list$probs$latent3_perc <- jf$getProbs(z_comb)
-cur_list$probs$latent4_perc <- jf$getProbs(z_erp_comb)
-
-# ranks
-cur_list$probs$latent1_rank <- jf$getProbs(latent_draws[,,1], perc = FALSE)
-cur_list$probs$latent2_rank <- jf$getProbs(latent_draws[,,2], perc = FALSE)
-cur_list$probs$latent3_rank <- jf$getProbs(z_comb, perc = FALSE)
-cur_list$probs$latent4_rank <- jf$getProbs(z_erp_comb, perc = FALSE)
+cur_list$probs$perc <- lapply(perc_draws, jf$getProbs, perc = TRUE)
+cur_list$probs$rank <- lapply(rank_draws, jf$getProbs, perc = FALSE)
 
 ## Rank Sum Method ## ----------------------------------------------------------
 
 raw_RS <- order(order(rowSums(apply(data, 2, FUN = function(x)order(order(x))))))
-
-## State percentiles ## --------------------------------------------------------
-
-cur_list$summ_latent1$perc_state <- jf$FstatePerc(latent_draws[,,1])
-cur_list$summ_latent2$perc_state <- jf$FstatePerc(latent_draws[,,2])
-cur_list$summ_latent3$perc_state <- jf$FstatePerc(z_comb)
-cur_list$summ_latent4$perc_state <- jf$FstatePerc(z_erp_comb)
 
 ## END SCRIPT ## ---------------------------------------------------------------
 

@@ -557,14 +557,12 @@ jf$addBoxLabel <- function(i, color = "white", size = 0.5, textsize = 3){
 }
 
 ## getProbs ## -----------------------------------------------------------------
+#' @param out posterior draws of percentiles or ranks
 #' @param perc (defaults to TRUE) if TRUE provides probabilities for 20, 80, 95, 99th percentile
 #' if FALSE provides probabilities for being ranked in the top 10, 22, 111, 444 
-jf$getProbs <- function(draws, perc = TRUE){
+jf$getProbs <- function(out, perc = TRUE){
   
   if(perc){
-    
-    out <- t(apply(draws, 1, ggplot2::cut_number, 
-                      n = 100, labels = FALSE))
     
     return(data.frame(
     
@@ -580,8 +578,6 @@ jf$getProbs <- function(draws, perc = TRUE){
     ))
     
   }else{
-    
-    out <- t(apply(draws, 1, FUN = function(x)order(order(x))))
     
     return(data.frame(
       # EP top 10 rank (0.5%)
@@ -603,21 +599,35 @@ jf$getProbs <- function(draws, perc = TRUE){
 
 ## Get percentiles using states ## ---------------------------------------------
 
+StateCalcs <- list()
+
+StateCalcs$perc <- function(x, ps_state) {
+  unique_states <- unique(ps_state)
+  pp <- numeric(length(x))
+  
+  # Loop through each state and calculate percentiles
+  for (state in unique_states) {
+    state_indices <- which(ps_state == state)
+    pp[state_indices] <- cut_number(x[state_indices], n = 100, labels = FALSE)
+  }
+  return(pp)
+}
+
+StateCalcs$rank <- function(x, ps_state) {
+  unique_states <- unique(ps_state)
+  pp <- numeric(length(x))
+  
+  # Loop through each state and calculate percentiles
+  for (state in unique_states) {
+    state_indices <- which(ps_state == state)
+    pp[state_indices] <- order(order(x[state_indices]))
+  }
+  return(pp)
+}
+
 jf$FstatePerc <- function(yy){
   
-  StatePerc <- function(x, ps_state) {
-    unique_states <- unique(ps_state)
-    pp <- numeric(length(x))
-    
-    # Loop through each state and calculate percentiles
-    for (state in unique_states) {
-      state_indices <- which(ps_state == state)
-      pp[state_indices] <- cut_number(x[state_indices], n = 100, labels = FALSE)
-    }
-    return(pp)
-  }
-  
-  jf$getResultsData(t(pbapply::pbapply(yy, 1, FUN = function(row) StatePerc(row, cur_list$data$census$ps_state)))) %>% 
+  jf$getResultsData(t(pbapply::pbapply(yy, 1, FUN = function(row) StateCalcs$perc(row, cur_list$data$census$ps_state)))) %>% 
     mutate(ps_state = cur_list$data$census$ps_state) %>% relocate(ps_state)
 }
 
