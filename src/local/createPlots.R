@@ -211,20 +211,23 @@ rm(data2)
 # rename columns of data
 data2 <- data %>% 
   rename("Current\nSmoking" = smoking,
-         'Inadequate\nphysical\nactivity' = activityleiswkpl,
+         'Inadequate\nphysical activity' = activityleiswkpl,
          "Inadequate\ndiet" = diet,
-         "Risky\nalcohol\nconsumption" = alcohol,
+         "Risky alcohol\nconsumption" = alcohol,
          "Overweight/\nobese" = overweight) %>% 
-  mutate(`Factor 1` = cur_list$summ_latent1$raww$point,
-         `Factor 2` = cur_list$summ_latent2$raww$point,
-         `Combined` = cur_list$summ_latent3$raww$point,
-         `Combined - ERP weighted` = cur_list$summ_latent4$raww$point)
+  mutate(`Rank Sum` = raw_RS,
+         PC1 = pr$x[,1],
+         PC2 = pr$x[,2],
+         `Index 1` = cur_list$summ_latent1$raww$point,
+         `Index 2` = cur_list$summ_latent2$raww$point,
+         `Index 3` = cur_list$summ_latent3$raww$point,
+         `Index 4` = cur_list$summ_latent4$raww$point)
 
 res <- cor(data2)
 ggcorrplot::ggcorrplot(res, #hc.order = TRUE,
                        outline.col = "white", #lab = TRUE,
                        colors = c("#6D9EC1", "white", "#E46726"),
-                       tl.cex = 6)
+                       tl.cex = 4)
 jf$jsave(filename = paste0("cor_withfactors.png"),
          base_folder = "out",
          square = T,
@@ -924,10 +927,10 @@ foo <- function(x){
 lapply(1:4, foo)
 rm(foo)
 
-## Remoteness and IRSD ## ------------------------------------------------------
+## Remoteness and IRSD - percentiles ## ----------------------------------------
 
-temp_fun <- function(df){
-cbind(global_obj$census, df) %>% 
+temp_fun <- function(x){
+cbind(global_obj$census, cur_list[[paste0("summ_latent",x)]]$perc) %>% 
   mutate(ABS_irsd_decile_nation_complete = factor(ABS_irsd_decile_nation_complete, 
                                                   levels = 1:10,
                                                   labels = c("Most\ndisadvantaged", 
@@ -938,46 +941,49 @@ cbind(global_obj$census, df) %>%
   geom_boxplot()+
     scale_fill_viridis_d(option = "B", direction = 1)+
   theme_bw()+
-  labs(x = "Index (posterior median percentiles)",
+  labs(x = "Posterior median percentile",
        y = "",
        fill = "")+
-  theme(text = element_text(size = 8))
+  theme(text = element_text(size = 8))+
+  labs(title = paste0("Index ", x))
+  
+  jf$jsave(filename = paste0("ra_irsd_perc", x, ".png"),
+           base_folder = "out",
+           square = F,
+           square_size = 1200,
+           dpi = 300)
 }
 
-# factor 1
-temp_fun(cur_list$summ_latent1$perc)+
-  labs(title = "Factor 1")
-jf$jsave(filename = "ra_irsd1.png",
-         base_folder = "out",
-         square = F,
-         square_size = 1200,
-         dpi = 300)
+lapply(1:4, temp_fun)
+rm(temp_fun)
 
-# factor 2
-temp_fun(cur_list$summ_latent2$perc)+
-  labs(title = "Factor 2")
-jf$jsave(filename = "ra_irsd2.png",
-         base_folder = "out",
-         square = F,
-         square_size = 1200,
-         dpi = 300)
+## Remoteness and IRSD - percentiles ## ----------------------------------------
 
-# factor 3
-temp_fun(cur_list$summ_latent3$perc)+
-  labs(title = "Combined")
-jf$jsave(filename = "ra_irsd3.png",
-         base_folder = "out",
-         square = F,
-         square_size = 1200,
-         dpi = 300)
+temp_fun <- function(x){
+  cbind(global_obj$census, cur_list[[paste0("summ_latent",x)]]$rankk) %>% 
+    mutate(ABS_irsd_decile_nation_complete = factor(ABS_irsd_decile_nation_complete, 
+                                                    levels = 1:10,
+                                                    labels = c("Most\ndisadvantaged", 
+                                                               as.character(2:9), 
+                                                               "Least\ndisadvantaged")),
+           ra_sa2 = fct_relevel(ra_sa2, "Major Cities")) %>% 
+    ggplot(aes(x = point, fill = ABS_irsd_decile_nation_complete, y = ra_sa2))+
+    geom_boxplot()+
+    scale_fill_viridis_d(option = "B", direction = 1)+
+    theme_bw()+
+    labs(x = "Posterior median rank",
+         y = "",
+         fill = "")+
+    theme(text = element_text(size = 8))+
+    labs(title = paste0("Index ", x))
+  
+  jf$jsave(filename = paste0("ra_irsd_rank", x, ".png"),
+           base_folder = "out",
+           square = F,
+           square_size = 1200,
+           dpi = 300)
+}
 
-# factor 4
-temp_fun(cur_list$summ_latent4$perc)+
-  labs(title = "Combined PW")
-jf$jsave(filename = "ra_irsd4.png",
-         base_folder = "out",
-         square = F,
-         square_size = 1200,
-         dpi = 300)
+lapply(1:4, temp_fun)
 
 ## END SCRIPT ## ---------------------------------------------------------------
