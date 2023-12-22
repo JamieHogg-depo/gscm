@@ -581,16 +581,16 @@ jf$getProbs <- function(out, perc = TRUE){
     
     return(data.frame(
       # EP top 10 rank (0.5%)
-      rank10 = colMeans(out > (2221-10-1)),
+      rank10 = colMeans(out < 11),
       
       # EP top 20 rank (0.9%) 
-      rank20 = colMeans(out > (2221-20-1)),
+      rank20 = colMeans(out < 21),
       
       # EP top 100 rank (4.5%)
-      rank100 = colMeans(out > (2221-100-1)),
+      rank100 = colMeans(out < 101),
       
       # EP top 500 rank (22.5%)
-      rank500 = colMeans(out > (2221-500-1))
+      rank500 = colMeans(out < 501)
       
     ))
     
@@ -613,14 +613,19 @@ StateCalcs$perc <- function(x, ps_state) {
   return(pp)
 }
 
-StateCalcs$rank <- function(x, ps_state) {
+StateCalcs$rank <- function(x, ps_state, reverse = FALSE) {
   unique_states <- unique(ps_state)
   pp <- numeric(length(x))
   
   # Loop through each state and calculate percentiles
-  for (state in unique_states) {
-    state_indices <- which(ps_state == state)
-    pp[state_indices] <- order(order(x[state_indices]))
+  for (state in unique_states){
+    if(reverse){
+      state_indices <- which(ps_state == state)
+      pp[state_indices] <- length(state_indices) - order(order(x[state_indices])) + 1
+    }else{
+      state_indices <- which(ps_state == state)
+      pp[state_indices] <- order(order(x[state_indices])) 
+    }
   }
   return(pp)
 }

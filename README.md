@@ -8,23 +8,25 @@ The input features are available in `InputFeatures.csv`. The dataset contains a 
 
 ### HDCIA product
 
-The Health Determinants for Cancer Indexes for Areas (HDCIA) product are available in `HDCIAProduct.csv`. This dataset contains the following 37 columns. NOTE: Index 1 and 2 are provided for completeness, Index 3 is the most applicable. 
-
-<!--from the authors. in the dataset `ModelledEstimates.csv`.--->
+The Health Determinants for Cancer Indexes for Areas (HDCIA) product are available in `HDCIAProduct.xlsx`. This dataset contains four sheets for each of the four indices. Index 1 and 2 are provided for completeness, Index 3 is the most applicable. Each sheet contains the following columns. 
 
 - `SA2_2016`: The 2016 9-digit SA2 codes
+- `STATE_2016`: The 2016 state names
+- `score_point`: Posterior median of raw scores
+- `score_lower`: Lower limit of 95% highest posterior density interval (HPDI) for raw scores
+- `score_upper`: Upper limit of 95% HPDI for raw scores
 
-Plus the following 6 columns for each of the four indices (`Index1_*` - `Index4_*`)
+Plus the 12 columns for each of `national_*` and `state_*`.
 
-- `*_point`: Posterior mean
-- `*_lower`: Lower limit of 95% highest posterior density interval (HPDI)
-- `*_upper`: Upper limit of 95% HPDI
-- `*_Prob_PercentileAbove80`: Probability that posterior percentile is above 80th
-- `*_Prob_PercentileAbove95`: Probability that posterior percentile is above 95th
-- `*_Prob_PercentileAbove99`: Probability that posterior percentile is above 99th
-
-And the following 3 columns for each of the four scores (`Scores1_*` - `Scores4_*`)
-
-- `*_point`: Posterior mean
-- `*_lower`: Lower limit of 95% highest posterior density interval (HPDI)
-- `*_upper`: Upper limit of 95% HPDI
+- `*percentile_point`: Median of posterior percentiles
+- `*percentile_lower`: Lower limit of 95% HPDI for posterior percentiles
+- `*percentile_upper`: Upper limit of 95% HPDI for posterior percentiles
+- `*percentile_PPAbove80`: Probability that posterior percentile is above 80th
+- `*percentile_PPAbove95`: Probability that posterior percentile is above 95th
+- `*percentile_PPAbove99`: Probability that posterior percentile is above 99th
+- `*rank_point`: Median of posterior rank
+- `*rank_lower`: Lower limit of 95% HPDI for posterior rank
+- `*rank_upper`: Upper limit of 95% HPDI for posterior rank
+- `*rank_PPtop10`: Probability that posterior rank is in top 10
+- `*rank_PPtop20`: Probability that posterior rank is in top 20
+- `*rank_PPtop100`: Probability that posterior rank is in top 100

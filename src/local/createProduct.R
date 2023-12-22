@@ -1,78 +1,55 @@
-# create Product
+# create HDCIA Product
 
-## function ## -----------------------------------------------------------------
-custom_sort <- function(names) {
-  # Split the column names into parts
-  parts <- strsplit(names, "_")
+# Write data to excel in different sheets
+wb <- createWorkbook("HDCIAProduct.xlsx")
+
+for(ix in 1:4){
+
+  temp <- cbind(
+    SA2_2016 = cur_list$data$census$SA2,
+    STATE_2016 = cur_list$data$map$Ste_name16,
+    # - NATIONAL - #
+    cur_list[[paste0("summ_latent", ix)]]$raww %>% 
+      dplyr::select(point, lower, upper) %>% 
+      setNames(paste0("score_", names(.))),
+    # -- #
+    cur_list[[paste0("summ_latent", ix)]]$perc %>% 
+      dplyr::select(point, lower, upper) %>% 
+      setNames(paste0("national_percentile_", names(.))),
+    # -- #
+    national_percentile_PPAbove80 = cur_list$probs$perc[[paste0("i", ix)]]$perc80,
+    national_percentile_PPAbove95 = cur_list$probs$perc[[paste0("i", ix)]]$perc95,
+    national_percentile_PPAbove99 = cur_list$probs$perc[[paste0("i", ix)]]$perc99,
+    # -- #
+    cur_list[[paste0("summ_latent", ix)]]$rankk %>% 
+      dplyr::select(point, lower, upper) %>% 
+      setNames(paste0("national_rank_", names(.))),
+    # -- #
+    national_rank_PPtop10 = cur_list$probs$rank[[paste0("i", ix, "_r")]]$rank10,
+    national_rank_PPtop20 = cur_list$probs$rank[[paste0("i", ix, "_r")]]$rank20,
+    national_rank_PPtop100 = cur_list$probs$rank[[paste0("i", ix, "_r")]]$rank100,
+    # - STATE - #
+    cur_list[[paste0("summ_latent", ix)]]$perc_s %>% 
+      dplyr::select(point, lower, upper) %>% 
+      setNames(paste0("state_percentile_", names(.))),
+    # -- #
+    state_percentile_PPAbove80 = cur_list$probs$perc[[paste0("i", ix, 's')]]$perc80,
+    state_percentile_PPAbove95 = cur_list$probs$perc[[paste0("i", ix, 's')]]$perc95,
+    state_percentile_PPAbove99 = cur_list$probs$perc[[paste0("i", ix, 's')]]$perc99,
+    # -- #
+    cur_list[[paste0("summ_latent", ix)]]$rankk_s %>% 
+      dplyr::select(point, lower, upper) %>% 
+      setNames(paste0("state_rank_", names(.))),
+    # -- #
+    state_rank_PPtop10 = cur_list$probs$rank[[paste0("i", ix, "s_r")]]$rank10,
+    state_rank_PPtop20 = cur_list$probs$rank[[paste0("i", ix, "s_r")]]$rank20,
+    state_rank_PPtop100 = cur_list$probs$rank[[paste0("i", ix, "s_r")]]$rank100
+  )
   
-  # Extract the main identifier (e.g., Index1, Scores1)
-  identifiers <- sapply(parts, function(x) x[1])
-  
-  # Extract the suffix (e.g., point, lower)
-  suffixes <- sapply(parts, function(x) ifelse(length(x) > 1, paste(x[-1], collapse = "_"), ""))
-  
-  # Define the order of suffixes
-  suffix_order <- c("point", "lower", "upper", 
-                    "Prob_PercentileAbove80", 
-                    "Prob_PercentileAbove95", 
-                    "Prob_PercentileAbove99")
-  
-  # Create a factor with levels in the desired order
-  suffixes_factor <- factor(suffixes, levels = suffix_order)
-  
-  # Order by identifiers and then by suffixes
-  ordered <- order(identifiers, suffixes_factor)
-  
-  names[ordered]
+  addWorksheet(wb, paste0("Index ", ix))
+  writeData(wb, ix, temp)
+
 }
-## -----------------------------------------------------------------------------
+saveWorkbook(wb, "HDCIAProduct.xlsx", overwrite = T)
 
-# scores
-foo <- function(x){
-cur_list[[paste0("summ_latent", x)]]$raww %>% 
-  dplyr::select(point, lower, upper) %>% 
-  mutate(type = paste0("Scores", x),
-         SA2_2016 = cur_list$data$census$SA2) %>% 
-  relocate(SA2_2016, type)
-}
-
-scores <- bind_rows(lapply(1:4, foo))
-
-# indices
-foo <- function(x){
-  cur_list[[paste0("summ_latent", x)]]$perc %>% 
-    dplyr::select(point, lower, upper) %>% 
-    mutate(type = paste0("Index", x),
-           SA2_2016 = cur_list$data$census$SA2) %>% 
-    relocate(SA2_2016, type)
-}
-index <- bind_rows(lapply(1:4, foo))
-
-# probabilities
-foo <- function(x){
-data.frame(Prob_PercentileAbove80 = cur_list$probs[[paste0("latent", x)]]$perc80,
-           Prob_PercentileAbove95 = cur_list$probs[[paste0("latent", x)]]$perc95,
-           Prob_PercentileAbove99 = cur_list$probs[[paste0("latent", x)]]$perc99,
-           type = paste0("Index", x),
-           SA2_2016 = cur_list$data$census$SA2) 
-    
-}
-probs <- bind_rows(lapply(1:4, foo))%>% 
-    pivot_wider(names_from = type, 
-                values_from = c(Prob_PercentileAbove80,
-                                Prob_PercentileAbove95,
-                                Prob_PercentileAbove99),
-                names_glue = "{type}_{.value}")
-
-# combine
-Product <- bind_rows(scores,index) %>% 
-  pivot_wider(names_from = type, 
-              values_from = c(point, lower, upper),
-              names_glue = "{type}_{.value}") %>% 
-  left_join(.,probs) %>% 
-  dplyr::select("SA2_2016", all_of(custom_sort(names(.))))
-
-# Output to csv
-Product %>% 
-  write.csv(., "HDCIAProduct.csv")
-
+## END SCRIPT ## ---------------------------------------------------------------

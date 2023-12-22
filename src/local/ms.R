@@ -119,16 +119,32 @@ rank_draws <- list()
 
 ## Index 1 ## ------------------------------------------------------------------
 
+message("Index 1")
+
 # draws
 perc_draws$i1 <- t(apply(latent_draws[,,1], 1, ggplot2::cut_number, n = 100, labels = FALSE))
 perc_draws$i1s <- t(pbapply::pbapply(latent_draws[,,1], 1, 
                                      FUN = function(row) StateCalcs$perc(row, cur_list$data$census$ps_state)))
 
 rank_draws$i1 <- t(apply(latent_draws[,,1], 1, FUN = function(x)order(order(x))))
+rank_draws$i1_r <- t(apply(latent_draws[,,1], 1, FUN = function(x)2222-order(order(x))))
 rank_draws$i1s <- t(pbapply::pbapply(latent_draws[,,1], 1, 
                                      FUN = function(row) StateCalcs$rank(row, cur_list$data$census$ps_state)))
+rank_draws$i1s_r <- t(pbapply::pbapply(latent_draws[,,1], 1, 
+                                       FUN = function(row) StateCalcs$rank(row, 
+                                                                           cur_list$data$census$ps_state, 
+                                                                           reverse = TRUE)))
+
+# summarise
+cur_list$summ_latent1$perc_s <- jf$getResultsData(perc_draws$i1s) %>% 
+  mutate(ps_state = cur_list$data$census$ps_state) %>% relocate(ps_state)
+
+cur_list$summ_latent1$rankk_s <- jf$getResultsData(rank_draws$i1s) %>% 
+  mutate(ps_state = cur_list$data$census$ps_state) %>% relocate(ps_state)
 
 ## Index 2 ## ------------------------------------------------------------------
+
+message("Index 2")
 
 # draws
 perc_draws$i2 <- t(apply(latent_draws[,,2], 1, ggplot2::cut_number, n = 100, labels = FALSE))
@@ -136,10 +152,24 @@ perc_draws$i2s <- t(pbapply::pbapply(latent_draws[,,2], 1,
                                      FUN = function(row) StateCalcs$perc(row, cur_list$data$census$ps_state)))
 
 rank_draws$i2 <- t(apply(latent_draws[,,2], 1, FUN = function(x)order(order(x))))
+rank_draws$i2_r <- t(apply(latent_draws[,,2], 1, FUN = function(x)2222-order(order(x))))
 rank_draws$i2s <- t(pbapply::pbapply(latent_draws[,,2], 1, 
                                      FUN = function(row) StateCalcs$rank(row, cur_list$data$census$ps_state)))
+rank_draws$i2s_r <- t(pbapply::pbapply(latent_draws[,,2], 1, 
+                                       FUN = function(row) StateCalcs$rank(row, 
+                                                                           cur_list$data$census$ps_state, 
+                                                                           reverse = TRUE)))
+
+# summarise
+cur_list$summ_latent2$perc_s <- jf$getResultsData(perc_draws$i2s) %>% 
+  mutate(ps_state = cur_list$data$census$ps_state) %>% relocate(ps_state)
+
+cur_list$summ_latent2$rankk_s <- jf$getResultsData(rank_draws$i2s) %>% 
+  mutate(ps_state = cur_list$data$census$ps_state) %>% relocate(ps_state)
 
 ## Index 3 - Combined ## -------------------------------------------------------
+
+message("Index 3")
 
 # weighted combo
 w <- apply(cur_list$summ_loadings$point^2, 2, sum)/sum(apply(cur_list$summ_loadings$point^2, 2, sum))
@@ -151,8 +181,13 @@ perc_draws$i3s <- t(pbapply::pbapply(z_comb, 1,
                                      FUN = function(row) StateCalcs$perc(row, cur_list$data$census$ps_state)))
 
 rank_draws$i3 <- t(apply(z_comb, 1, FUN = function(x)order(order(x))))
+rank_draws$i3_r <- t(apply(z_comb, 1, FUN = function(x)2222-order(order(x))))
 rank_draws$i3s <- t(pbapply::pbapply(z_comb, 1, 
                                      FUN = function(row) StateCalcs$rank(row, cur_list$data$census$ps_state)))
+rank_draws$i3s_r <- t(pbapply::pbapply(z_comb, 1, 
+                                       FUN = function(row) StateCalcs$rank(row, 
+                                                                           cur_list$data$census$ps_state, 
+                                                                           reverse = TRUE)))
 
 # summarise
 cur_list$summ_latent3$raww <- jf$getResultsData(z_comb)
@@ -172,6 +207,8 @@ rm(sele)
 
 ## Index 4 - PW Combined ## ----------------------------------------------------
 
+message("Index 4")
+
 # get the posterior draws
 z_erp_comb <- t(t(z_comb)*cur_list$data$census$N_persons)
 
@@ -181,8 +218,13 @@ perc_draws$i4s <- t(pbapply::pbapply(z_erp_comb, 1,
                                      FUN = function(row) StateCalcs$perc(row, cur_list$data$census$ps_state)))
 
 rank_draws$i4 <- t(apply(z_erp_comb, 1, FUN = function(x)order(order(x))))
+rank_draws$i4_r <- t(apply(z_erp_comb, 1, FUN = function(x)2222 - order(order(x))))
 rank_draws$i4s <- t(pbapply::pbapply(z_erp_comb, 1, 
                                      FUN = function(row) StateCalcs$rank(row, cur_list$data$census$ps_state)))
+rank_draws$i4s_r <- t(pbapply::pbapply(z_erp_comb, 1, 
+                                       FUN = function(row) StateCalcs$rank(row, 
+                                                                           cur_list$data$census$ps_state, 
+                                                                           reverse = TRUE)))
 
 # summarise
 cur_list$summ_latent4$raww <- jf$getResultsData(z_erp_comb)
