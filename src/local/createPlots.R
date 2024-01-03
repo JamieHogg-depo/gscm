@@ -15,13 +15,14 @@ pr$rotation
 plot(pr)
 
 # loadings
-rbind(data.frame(loading = pr$rotation[,1], f = "PC1 - 42%") %>% rownames_to_column("name"),
+plt <- rbind(data.frame(loading = pr$rotation[,1], f = "PC1 - 42%") %>% rownames_to_column("name"),
       data.frame(loading = pr$rotation[,2], f = "PC2 - 30%") %>% rownames_to_column("name")) %>% 
   mutate(dir = ifelse(loading > 0, "pos", "neg"),
          name = JHCW(name)) %>% 
   ggplot(aes(x = loading, y = name, fill = dir))+
   theme_bw()+
   geom_col()+
+  xlim(-0.8,0.8)+
   scale_fill_manual(values = c("skyblue", "coral"),
                     breaks = c("pos", "neg"))+
   scale_y_discrete(breaks = c("Risky\nalcohol\nconsumption", "Current\nSmoking", "Inadequate\ndiet", 'Inadequate\nphysical\nactivity', "Overweight/\nobese"))+
@@ -31,6 +32,14 @@ rbind(data.frame(loading = pr$rotation[,1], f = "PC1 - 42%") %>% rownames_to_col
         text = element_text(size = 8))+
   facet_grid(.~f)
 jf$jsave(filename = paste0("pc_loadings.png"),
+         base_folder = "out",
+         plot = plt,
+         square = F,
+         square_size = 1200,
+         dpi = 300)
+
+plt + theme(text = element_text(size = 12))
+jf$jsave(filename = paste0("pc_loadings2.png"),
          base_folder = "out",
          square = F,
          square_size = 1200,
