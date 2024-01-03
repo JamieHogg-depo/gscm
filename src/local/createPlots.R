@@ -15,7 +15,7 @@ pr$rotation
 plot(pr)
 
 # loadings
-plt <- rbind(data.frame(loading = pr$rotation[,1], f = "PC1 - 42%") %>% rownames_to_column("name"),
+rbind(data.frame(loading = pr$rotation[,1], f = "PC1 - 42%") %>% rownames_to_column("name"),
       data.frame(loading = pr$rotation[,2], f = "PC2 - 30%") %>% rownames_to_column("name")) %>% 
   mutate(dir = ifelse(loading > 0, "pos", "neg"),
          name = JHCW(name)) %>% 
@@ -29,17 +29,9 @@ plt <- rbind(data.frame(loading = pr$rotation[,1], f = "PC1 - 42%") %>% rownames
   labs(y = "", 
        x = "")+
   theme(legend.position = "none",
-        text = element_text(size = 8))+
+        text = element_text(size = 12))+
   facet_grid(.~f)
 jf$jsave(filename = paste0("pc_loadings.png"),
-         base_folder = "out",
-         plot = plt,
-         square = F,
-         square_size = 1200,
-         dpi = 300)
-
-plt + theme(text = element_text(size = 12))
-jf$jsave(filename = paste0("pc_loadings2.png"),
          base_folder = "out",
          square = F,
          square_size = 1200,
@@ -84,10 +76,10 @@ data.frame(F1 = cur_list$summ_latent1$perc$point,
                   columnLabels = c("Index 1",
                                    "Index 2",
                                    "Index 3 -\nCombined",
-                                   "Index 3 -\nCombined PW"),
+                                   "Index 4 -\nCombined PW"),
                   lower = list(continuous = wrap("points", size=0.05)))+
   theme_bw()+
-  theme(text = element_text(size = 8))
+  theme(text = element_text(size = 10))
 jf$jsave(filename = paste0("pairsperc_indexonly.png"),
          base_folder = "out",
          square = T,
