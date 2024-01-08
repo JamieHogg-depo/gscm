@@ -293,7 +293,7 @@ rm(tf, point, lower, upper)
         slice_max(perc95, n = 4, with_ties = FALSE) %>%
         dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking),
       
-      cur_list$probs$latent1 %>% 
+      cur_list$probs$perc$i1 %>% 
         cbind(.,cur_list$summ_latent1$perc) %>% 
         cbind(.,map_sa2) %>% 
         left_join(.,global_obj$census) %>% 
@@ -303,7 +303,15 @@ rm(tf, point, lower, upper)
         slice_max(perc95, n = 4, with_ties = FALSE) %>% 
         dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking),
       
-      cur_list$probs$latent2 %>% 
+      cur_list$probs$rank$i1_r %>% 
+        cbind(.,cur_list$summ_latent1$rankk) %>% 
+        cbind(.,map_sa2) %>% 
+        left_join(.,global_obj$census) %>% 
+        cbind(.,rf_point_perc) %>% 
+        slice_max(rank10, n = 4, with_ties = FALSE) %>% 
+        dplyr::select("Sa2_name16", "rank10", "Ste_name16", "N_persons", "point", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking),
+      
+      cur_list$probs$perc$i2 %>% 
         cbind(.,cur_list$summ_latent2$perc) %>%
         cbind(.,map_sa2) %>% 
         left_join(.,global_obj$census) %>% 
@@ -313,7 +321,15 @@ rm(tf, point, lower, upper)
         slice_max(perc95, n = 4, with_ties = FALSE) %>% 
         dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking),
       
-      cur_list$probs$latent3 %>% 
+      cur_list$probs$rank$i2_r %>% 
+        cbind(.,cur_list$summ_latent2$rankk) %>% 
+        cbind(.,map_sa2) %>% 
+        left_join(.,global_obj$census) %>% 
+        cbind(.,rf_point_perc) %>% 
+        slice_max(rank10, n = 4, with_ties = FALSE) %>% 
+        dplyr::select("Sa2_name16", "rank10", "Ste_name16", "N_persons", "point", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking),
+      
+      cur_list$probs$perc$i3 %>% 
         cbind(.,cur_list$summ_latent3$perc) %>%
         cbind(.,map_sa2) %>% 
         left_join(.,global_obj$census) %>% 
@@ -323,7 +339,15 @@ rm(tf, point, lower, upper)
         slice_max(perc95, n = 4, with_ties = FALSE) %>% 
         dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking),
       
-      cur_list$probs$latent4 %>% 
+      cur_list$probs$rank$i3_r %>% 
+        cbind(.,cur_list$summ_latent3$rankk) %>% 
+        cbind(.,map_sa2) %>% 
+        left_join(.,global_obj$census) %>% 
+        cbind(.,rf_point_perc) %>% 
+        slice_max(rank10, n = 4, with_ties = FALSE) %>% 
+        dplyr::select("Sa2_name16", "rank10", "Ste_name16", "N_persons", "point", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking),
+      
+      cur_list$probs$perc$i4 %>% 
         cbind(.,cur_list$summ_latent4$perc) %>%
         cbind(.,map_sa2) %>% 
         left_join(.,global_obj$census) %>% 
@@ -331,7 +355,16 @@ rm(tf, point, lower, upper)
         cbind(.,rf_se_perc) %>%
         cbind(.,rf_cv) %>%
         slice_max(perc95, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking)
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking),
+      
+      cur_list$probs$rank$i4_r %>% 
+        cbind(.,cur_list$summ_latent4$rankk) %>% 
+        cbind(.,map_sa2) %>% 
+        left_join(.,global_obj$census) %>% 
+        cbind(.,rf_point_perc) %>% 
+        slice_max(rank10, n = 4, with_ties = FALSE) %>% 
+        dplyr::select("Sa2_name16", "rank10", "Ste_name16", "N_persons", "point", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking)
+      
     ) %>% 
       bind_rows(.id = "Index") %>% 
       group_by(Index) %>% 
@@ -341,9 +374,13 @@ rm(tf, point, lower, upper)
                        rep("PC1", 4),
                        rep("PC2", 4),
                        rep("Index 1", 4),
+                       rep("Index 1 (top 20)", 4),
                        rep("Index 2", 4),
+                       rep("Index 2 (top 20)", 4),
                        rep("Index 3 - combined", 4),
-                       rep("Index 4 - combined PW", 4)),
+                       rep("Index 3 - combined (top 20)", 4),
+                       rep("Index 4 - combined PW", 4),
+                       rep("Index 3 - combined PW (top 20)", 4)),
              N_persons = round(N_persons),
              Ste_name16 = case_when(
                Ste_name16 == "New South Wales" ~ "NSW",
