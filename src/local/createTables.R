@@ -273,7 +273,18 @@ rm(tf, point, lower, upper)
         cbind(.,map_sa2) %>% 
         left_join(.,global_obj$census) %>% 
         slice_max(perc95, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "ra_sa2",activityleiswkpl, alcohol, diet, overweight, smoking),
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "ra_sa2",
+                      activityleiswkpl, alcohol, diet, overweight, smoking),
+      
+      rf_point_perc %>% 
+        cbind(.,rf_se_perc) %>%
+        cbind(.,rf_cv) %>%
+        mutate(perc95 = raw_MMN) %>% 
+        cbind(.,map_sa2) %>% 
+        left_join(.,global_obj$census) %>% 
+        slice_max(perc95, n = 4, with_ties = FALSE) %>% 
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "ra_sa2",
+                      activityleiswkpl, alcohol, diet, overweight, smoking),
       
       rf_point_perc %>% 
         cbind(.,rf_se_perc) %>%
@@ -282,7 +293,8 @@ rm(tf, point, lower, upper)
         cbind(.,map_sa2) %>% 
         left_join(.,global_obj$census) %>% 
         slice_max(perc95, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking),
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "ra_sa2", 
+                      activityleiswkpl, alcohol, diet, overweight, smoking),
       
       rf_point_perc %>% 
         cbind(.,rf_se_perc) %>%
@@ -291,7 +303,8 @@ rm(tf, point, lower, upper)
         cbind(.,map_sa2) %>% 
         left_join(.,global_obj$census) %>% 
         slice_max(perc95, n = 4, with_ties = FALSE) %>%
-        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking),
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "ra_sa2", 
+                      activityleiswkpl, alcohol, diet, overweight, smoking),
       
       cur_list$probs$perc$i1 %>% 
         cbind(.,cur_list$summ_latent1$perc) %>% 
@@ -301,7 +314,8 @@ rm(tf, point, lower, upper)
         cbind(.,rf_se_perc) %>%
         cbind(.,rf_cv) %>%
         slice_max(perc95, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking),
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", 
+                      activityleiswkpl, alcohol, diet, overweight, smoking),
       
       cur_list$probs$rank$i1_r %>% 
         cbind(.,cur_list$summ_latent1$rankk) %>% 
@@ -309,7 +323,8 @@ rm(tf, point, lower, upper)
         left_join(.,global_obj$census) %>% 
         cbind(.,rf_point_perc) %>% 
         slice_max(rank10, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "rank10", "Ste_name16", "N_persons", "point", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking),
+        dplyr::select("Sa2_name16", "rank10", "Ste_name16", "N_persons", "point", "ra_sa2", 
+                      activityleiswkpl, alcohol, diet, overweight, smoking),
       
       cur_list$probs$perc$i2 %>% 
         cbind(.,cur_list$summ_latent2$perc) %>%
@@ -319,7 +334,8 @@ rm(tf, point, lower, upper)
         cbind(.,rf_se_perc) %>%
         cbind(.,rf_cv) %>%
         slice_max(perc95, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking),
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", 
+                      activityleiswkpl, alcohol, diet, overweight, smoking),
       
       cur_list$probs$rank$i2_r %>% 
         cbind(.,cur_list$summ_latent2$rankk) %>% 
@@ -327,7 +343,8 @@ rm(tf, point, lower, upper)
         left_join(.,global_obj$census) %>% 
         cbind(.,rf_point_perc) %>% 
         slice_max(rank10, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "rank10", "Ste_name16", "N_persons", "point", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking),
+        dplyr::select("Sa2_name16", "rank10", "Ste_name16", "N_persons", "point", "ra_sa2", 
+                      activityleiswkpl, alcohol, diet, overweight, smoking),
       
       cur_list$probs$perc$i3 %>% 
         cbind(.,cur_list$summ_latent3$perc) %>%
@@ -337,7 +354,8 @@ rm(tf, point, lower, upper)
         cbind(.,rf_se_perc) %>%
         cbind(.,rf_cv) %>%
         slice_max(perc95, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking),
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", 
+                      activityleiswkpl, alcohol, diet, overweight, smoking),
       
       cur_list$probs$rank$i3_r %>% 
         cbind(.,cur_list$summ_latent3$rankk) %>% 
@@ -345,7 +363,8 @@ rm(tf, point, lower, upper)
         left_join(.,global_obj$census) %>% 
         cbind(.,rf_point_perc) %>% 
         slice_max(rank10, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "rank10", "Ste_name16", "N_persons", "point", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking),
+        dplyr::select("Sa2_name16", "rank10", "Ste_name16", "N_persons", "point", "ra_sa2", 
+                      activityleiswkpl, alcohol, diet, overweight, smoking),
       
       cur_list$probs$perc$i4 %>% 
         cbind(.,cur_list$summ_latent4$perc) %>%
@@ -355,7 +374,8 @@ rm(tf, point, lower, upper)
         cbind(.,rf_se_perc) %>%
         cbind(.,rf_cv) %>%
         slice_max(perc95, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking),
+        dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", 
+                      activityleiswkpl, alcohol, diet, overweight, smoking),
       
       cur_list$probs$rank$i4_r %>% 
         cbind(.,cur_list$summ_latent4$rankk) %>% 
@@ -363,7 +383,8 @@ rm(tf, point, lower, upper)
         left_join(.,global_obj$census) %>% 
         cbind(.,rf_point_perc) %>% 
         slice_max(rank10, n = 4, with_ties = FALSE) %>% 
-        dplyr::select("Sa2_name16", "rank10", "Ste_name16", "N_persons", "point", "ra_sa2", activityleiswkpl, alcohol, diet, overweight, smoking)
+        dplyr::select("Sa2_name16", "rank10", "Ste_name16", "N_persons", "point", "ra_sa2", 
+                      activityleiswkpl, alcohol, diet, overweight, smoking)
       
     ) %>% 
       bind_rows(.id = "Index") %>% 
@@ -371,6 +392,7 @@ rm(tf, point, lower, upper)
       mutate(total_pop_effected = sum(N_persons)) %>% 
       ungroup() %>% 
       mutate(Index = c(rep("Rank Sum", 4),
+                       rep("Min-Max Normalisation", 4),
                        rep("PC1", 4),
                        rep("PC2", 4),
                        rep("Index 1", 4),

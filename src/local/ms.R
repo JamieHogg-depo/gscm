@@ -248,6 +248,21 @@ cur_list$probs$rank <- lapply(rank_draws, jf$getProbs, perc = FALSE)
 
 raw_RS <- order(order(rowSums(apply(data, 2, FUN = function(x)order(order(x))))))
 
+## Min-Max normalises ## -------------------------------------------------------
+
+raw_MMN <- order(order(rowSums(mutate(data, across(everything(), ~(. - min(.)) / (max(.) - min(.))))))) 
+
+## K-means to get 10 groups ## -------------------------------------------------
+
+# library(cluster)
+# km <- kmeans(data, centers = 10)
+# cl <- as.factor(km$cluster)
+# ce <- as.data.frame(km$centers)
+# 
+# temp <- apply(ce, 2, FUN = function(x)order(order(x))) %>% 
+#   as.data.frame() %>% 
+#   mutate(s = rowSums(.))
+
 ## END SCRIPT ## ---------------------------------------------------------------
 
 }
