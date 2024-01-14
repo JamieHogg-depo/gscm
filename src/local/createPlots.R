@@ -77,7 +77,8 @@ data.frame(F1 = cur_list$summ_latent1$perc$point,
                                    "Index 2",
                                    "Index 3 -\nCombined",
                                    "Index 4 -\nCombined PW"),
-                  lower = list(continuous = wrap("points", size=0.05)))+
+                  lower = list(continuous = wrap("points", size=0.05)),
+                  upper = list(continuous = wrap("points", size=0.05)))+
   theme_bw()+
   theme(text = element_text(size = 10))
 jf$jsave(filename = paste0("pairsperc_indexonly.png"),
