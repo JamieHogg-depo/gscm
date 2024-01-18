@@ -109,6 +109,11 @@ jf$jsave(filename = paste0("pairs_observed_factors.png"),
          square = T,
          square_size = 1200,
          dpi = 300)
+jf$jsave(filename = paste0("pairs_observed_factors_s.png"),
+         base_folder = "out",
+         square = T,
+         square_size = 3000,
+         dpi = 300)
 
 ## Scatter - Alcohol ## --------------------------------------------------------
 
@@ -286,7 +291,7 @@ se_raw_1 <- cbind(
   theme_bw()+
   geom_point()+
   labs(y = "Posterior standard error (factor 1)",
-       x = "",
+       x = "Area ID",
        col = "")+
   theme(text = element_text(size = 8),
         legend.position = "bottom")
@@ -346,7 +351,7 @@ se_rank_1 <- cbind(
   theme_bw()+
   geom_point()+
   labs(y = "Posterior standard error (factor 1 - rank)",
-       x = "",
+       x = "Area ID",
        col = "")+
   theme(text = element_text(size = 8),
         legend.position = "bottom")
@@ -407,7 +412,7 @@ se_raw_2 <- cbind(
   theme_bw()+
   geom_point()+
   labs(y = "Posterior standard error (Factor 2)",
-       x = "",
+       x = "Area ID",
        col = "")+
   theme(text = element_text(size = 8),
         legend.position = "bottom")
@@ -467,7 +472,7 @@ se_rank_2 <- cbind(
   theme_bw()+
   geom_point()+
   labs(y = "Posterior standard error (Factor 2 - rank)",
-       x = "",
+       x = "Area ID",
        col = "")+
   theme(text = element_text(size = 8),
         legend.position = "bottom")
@@ -536,7 +541,7 @@ se_raw_1 <- cbind(
   theme_bw()+
   geom_point()+
   labs(y = "Posterior standard error (raw factor 1)",
-       x = "",
+       x = "Area ID",
        col = "")+
   theme(text = element_text(size = 8),
         legend.position = "bottom")
@@ -596,7 +601,7 @@ se_rank_1 <- cbind(
   theme_bw()+
   geom_point()+
   labs(y = "Posterior standard error (rank factor 1)",
-       x = "",
+       x = "Area ID",
        col = "")+
   theme(text = element_text(size = 8),
         legend.position = "bottom")
@@ -665,7 +670,7 @@ se_raw_1 <- cbind(
   theme_bw()+
   geom_point()+
   labs(y = "Posterior standard error (raw factor 1)",
-       x = "",
+       x = "Area ID",
        col = "")+
   theme(text = element_text(size = 8),
         legend.position = "bottom")
@@ -725,7 +730,7 @@ se_perc_1 <- cbind(
   theme_bw()+
   geom_point()+
   labs(y = "Posterior standard error (perc factor 1)",
-       x = "",
+       x = "Area ID",
        col = "")+
   theme(text = element_text(size = 8),
         legend.position = "bottom")
@@ -785,7 +790,7 @@ se_rank_1 <- cbind(
   theme_bw()+
   geom_point()+
   labs(y = "Posterior standard error (rank factor 1)",
-       x = "",
+       x = "Area ID",
        col = "")+
   theme(text = element_text(size = 8),
         legend.position = "bottom")

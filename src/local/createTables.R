@@ -99,7 +99,7 @@ data_sd %>%
 foo <- function(x){
 out_all[[x]]$summ_hp %>% 
   filter(!str_detect(variable, "Lambda|psi")) %>% 
-  mutate(sum = getSumColumn(point, lower, upper, 2)) %>% 
+  mutate(sum = getSumColumn(point, lower, upper, 4)) %>% 
   dplyr::select(variable, sum) %>% 
   pivot_wider(names_from = variable, values_from = sum) %>% 
   mutate(model_spec = getModelSpecs(out_all[[x]]$cur_model_spec)) %>% 
@@ -147,13 +147,13 @@ full_table <- list(latentvar_table, modelfit_table, hyper_table) %>%
   cbind(.,grid[which(grid$L == 2 & grid$model == "GSCM"),]) %>% 
   arrange(shared_latent_rho_fixed, specific_latent_rho_fixed)%>% 
   # Set some cells to NA
-  mutate(`rho[1]` = ifelse(shared_latent_rho_fixed == 2, `rho[1]`, NA),
-         `rho[2]` = ifelse(shared_latent_rho_fixed == 2, `rho[2]`, NA),
+  mutate(`rho[1]` = ifelse(shared_latent_rho_fixed == 'LCAR', `rho[1]`, NA),
+         `rho[2]` = ifelse(shared_latent_rho_fixed == 'LCAR', `rho[2]`, NA),
          `kappa[1]` = NA,
-         `kappa[2]` = ifelse(specific_latent_rho_fixed == 2, `kappa[2]`, NA),
-         `kappa[3]` = ifelse(specific_latent_rho_fixed == 2, `kappa[3]`, NA),
-         `kappa[4]` = ifelse(specific_latent_rho_fixed == 2, `kappa[4]`, NA),
-         `kappa[5]` = ifelse(specific_latent_rho_fixed == 2, `kappa[5]`, NA))
+         `kappa[2]` = ifelse(specific_latent_rho_fixed == 'LCAR', `kappa[2]`, NA),
+         `kappa[3]` = ifelse(specific_latent_rho_fixed == 'LCAR', `kappa[3]`, NA),
+         `kappa[4]` = ifelse(specific_latent_rho_fixed == 'LCAR', `kappa[4]`, NA),
+         `kappa[5]` = ifelse(specific_latent_rho_fixed == 'LCAR', `kappa[5]`, NA))
 
 # Table - model selection
 full_table %>% 
@@ -178,7 +178,7 @@ full_table %>%
   dplyr::select(-`kappa[1]`) %>% 
   rename(Shared = shared_latent_rho_fixed,
          Specific = specific_latent_rho_fixed) %>% 
-  reLabSS() %>% 
+  #reLabSS() %>% 
   knitr::kable(., "latex", booktabs = TRUE)
 
 ## Factor loadings table - measurement error ## --------------------------------
