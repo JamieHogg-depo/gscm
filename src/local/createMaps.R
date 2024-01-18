@@ -2,11 +2,11 @@ for(jkl in 1:4){
   
   message(paste0("Round: ", jkl))
   if(jkl == 3){
-    top_label <- "Index 3 - Combined"
+    top_label <- "Health Behaviors Index (HBI)"
   }else if(jkl == 4){
-    top_label <- "Index 4 - PW Combined"
+    top_label <- "Population Adjusted Health Behaviors Index (PAHBI)"
   }else{
-    top_label <- paste0("Index ", jkl)
+    top_label <- paste0("Factor ", jkl)
   }
 
 ## Raw #### --------------------------------------------------------------------
@@ -513,7 +513,7 @@ message("---- Finished perc_cisize")
 ## Percentiles - state #### ----------------------------------------------------
 
 # caterpillar
-cur_list[[paste0("summ_latent", jkl)]]$perc_state %>% 
+cur_list[[paste0("summ_latent", jkl)]]$perc_s %>% 
   arrange(point) %>% 
   ggplot(aes(y = point, ymin = lower, ymax = upper,
              x = 1:nrow(.)))+theme_bw()+
@@ -530,7 +530,7 @@ jf$jsave(filename = paste0("cat_perc_state", jkl, ".png"),
 message("---- Finished cater perc state")
 
 # SETUP
-mapping_data <- cur_list[[paste0("summ_latent", jkl)]]$perc_state %>% 
+mapping_data <- cur_list[[paste0("summ_latent", jkl)]]$perc_s %>% 
   cbind(.,map_sa2) %>% 
   st_as_sf() %>%
   st_transform(4326)
@@ -685,7 +685,7 @@ message("---- Finished ep")
 
 # SETUP
 mapping_data <- map_sa2 %>% 
-  mutate(value = cur_list$probs[[paste0("latent", jkl)]]$perc80) %>% 
+  mutate(value = cur_list$probs$perc[[paste0("i", jkl)]]$perc80) %>% 
   st_as_sf() %>%
   st_transform(4326)
 
