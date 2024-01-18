@@ -993,4 +993,31 @@ temp_fun <- function(x){
 
 lapply(1:4, temp_fun)
 
+## Activity vs Alcohol ## ------------------------------------------------------
+
+data.frame(y = y_mats$point$alcohol,
+           ymin = y_mats$point$alcohol - 1.96 * y_mats$sd$alcohol,
+           ymax = y_mats$point$alcohol + 1.96 * y_mats$sd$alcohol,
+           x = y_mats$point$activityleiswkpl,
+           xmin = y_mats$point$activityleiswkpl - 1.96 * y_mats$sd$activityleiswkpl,
+           xmax = y_mats$point$activityleiswkpl + 1.96 * y_mats$sd$activityleiswkpl) %>% 
+  ggplot(aes(y = y, ymin = ymin, ymax = ymax, 
+             x = x, xmin = xmin, xmax = xmax))+
+  geom_errorbar(col = "grey")+
+  geom_errorbarh(col = "grey")+
+  geom_point()+
+  theme_bw()+
+  xlim(0,1)+
+  ylim(0,1)+
+  coord_flip()+
+  labs(y = "Risky alcohol consumption",
+       x = 'Inadequate physical activity',
+       title = "Point estimates")
+
+jf$jsave(filename = "alcohol_activity_point_estimates.png",
+         base_folder = "out",
+         square = T,
+         square_size = 3000,
+         dpi = 300)
+
 ## END SCRIPT ## ---------------------------------------------------------------
