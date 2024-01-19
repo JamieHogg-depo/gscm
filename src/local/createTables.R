@@ -91,7 +91,8 @@ data_sd %>%
   pivot_wider(names_from = metric, values_from = value) %>% 
   left_join(.,lookup) %>% 
   dplyr::select(-1) %>% 
-  relocate(rf_full)
+  relocate(rf_full)%>% 
+  knitr::kable(., "latex", booktabs = TRUE)
 
 ## Model comparison ## ---------------------------------------------------------
 

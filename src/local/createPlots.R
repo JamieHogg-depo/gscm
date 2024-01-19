@@ -53,10 +53,10 @@ data.frame(raw_RS = cut_number(raw_RS, n = 100, label = FALSE),
                   columnLabels = c("Rank Sum", 
                                    "PC1", 
                                    "PC2",
-                                   "Index 1",
-                                   "Index 2",
-                                   "Index 3 -\nCombined",
-                                   "Index 3 -\nCombined PW"),
+                                   "Factor 1",
+                                   "Factor 2",
+                                   "HBI",
+                                   "PAHBI"),
                   lower = list(continuous = wrap("points", size=0.05)))+
   theme_bw()+
   theme(text = element_text(size = 8))
@@ -73,15 +73,33 @@ data.frame(F1 = cur_list$summ_latent1$perc$point,
            Combined = cur_list$summ_latent3$perc$point,
            CombinedPW = cur_list$summ_latent4$perc$point) %>% 
   GGally::ggpairs(.,
-                  columnLabels = c("Index 1",
-                                   "Index 2",
-                                   "Index 3 -\nCombined",
-                                   "Index 4 -\nCombined PW"),
+                  columnLabels = c("Factor 1",
+                                   "Factor 2",
+                                   "HBI",
+                                   "PAHBI"),
                   lower = list(continuous = wrap("points", size=0.05)),
                   upper = list(continuous = wrap("points", size=0.05)))+
   theme_bw()+
   theme(text = element_text(size = 10))
 jf$jsave(filename = paste0("pairsperc_indexonly.png"),
+         base_folder = "out",
+         square = T,
+         square_size = 1200,
+         dpi = 300)
+
+data.frame(F1 = cur_list$summ_latent1$perc$point,
+           F2 = cur_list$summ_latent2$perc$point,
+           Combined = cur_list$summ_latent3$perc$point,
+           CombinedPW = cur_list$summ_latent4$perc$point) %>% 
+  GGally::ggpairs(.,
+                  columnLabels = c("Factor 1",
+                                   "Factor 2",
+                                   "HBI",
+                                   "PAHBI"),
+                  lower = list(continuous = wrap("points", size=0.05)))+
+  theme_bw()+
+  theme(text = element_text(size = 10))
+jf$jsave(filename = paste0("pairsperc_indexonly_cor.png"),
          base_folder = "out",
          square = T,
          square_size = 1200,
@@ -225,10 +243,10 @@ data2 <- data %>%
   mutate(`Rank Sum` = raw_RS,
          PC1 = pr$x[,1],
          PC2 = pr$x[,2],
-         `Index 1` = cur_list$summ_latent1$raww$point,
-         `Index 2` = cur_list$summ_latent2$raww$point,
-         `Index 3` = cur_list$summ_latent3$raww$point,
-         `Index 4` = cur_list$summ_latent4$raww$point)
+         `Factor 1` = cur_list$summ_latent1$raww$point,
+         `Factor 2` = cur_list$summ_latent2$raww$point,
+         `HBI` = cur_list$summ_latent3$raww$point,
+         `PAHBI` = cur_list$summ_latent4$raww$point)
 
 res <- cor(data2)
 ggcorrplot::ggcorrplot(res, #hc.order = TRUE,
@@ -885,7 +903,7 @@ data.frame(f1 = out_all[[chose_ix]]$summ_latent1$raww$point,
 
 foo <- function(x){
   data.frame(point = cur_list[[paste0("summ_latent", x)]]$perc$point,
-             prob = cur_list$probs[[paste0("latent", x, "_perc")]]$perc80)%>% 
+             prob = cur_list$probs$perc[[paste0("i", x)]]$perc80)%>% 
     ggplot(aes(y = prob, x = point,
                col = prob))+
     geom_point()+theme_bw()+
@@ -911,7 +929,7 @@ rm(foo)
 
 foo <- function(x){
   data.frame(point = cur_list[[paste0("summ_latent", x)]]$rankk$point,
-             prob = cur_list$probs[[paste0("latent", x, "_rank")]]$rank100)%>% 
+             prob = cur_list$probs$rank[[paste0("i", x)]]$rank100)%>% 
     ggplot(aes(y = prob, x = point,
                col = prob))+
     geom_point()+theme_bw()+
@@ -936,6 +954,8 @@ rm(foo)
 
 ## Remoteness and IRSD - percentiles ## ----------------------------------------
 
+temp_names = c("Factor 1", "Factor 2", "HBI", "PAHBI")
+
 temp_fun <- function(x){
 cbind(global_obj$census, cur_list[[paste0("summ_latent",x)]]$perc) %>% 
   mutate(ABS_irsd_decile_nation_complete = factor(ABS_irsd_decile_nation_complete, 
@@ -952,7 +972,7 @@ cbind(global_obj$census, cur_list[[paste0("summ_latent",x)]]$perc) %>%
        y = "",
        fill = "")+
   theme(text = element_text(size = 8))+
-  labs(title = paste0("Index ", x))
+  labs(title = temp_names[x])
   
   jf$jsave(filename = paste0("ra_irsd_perc", x, ".png"),
            base_folder = "out",
@@ -982,7 +1002,7 @@ temp_fun <- function(x){
          y = "",
          fill = "")+
     theme(text = element_text(size = 8))+
-    labs(title = paste0("Index ", x))
+    labs(title = temp_names[x])
   
   jf$jsave(filename = paste0("ra_irsd_rank", x, ".png"),
            base_folder = "out",
@@ -992,6 +1012,7 @@ temp_fun <- function(x){
 }
 
 lapply(1:4, temp_fun)
+rm(temp_fun, temp_names)
 
 ## Activity vs Alcohol ## ------------------------------------------------------
 
