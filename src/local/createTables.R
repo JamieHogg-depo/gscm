@@ -262,8 +262,15 @@ rm(tf, point, lower, upper)
     rf_point_perc <- bind_cols(lapply(y_mats$point[,-c(1,2)], ggplot2::cut_number, n = 100, labels = FALSE))
     rf_se_perc <- bind_cols(lapply(y_mats$sd[,-c(1,2)], ggplot2::cut_number, n = 100, labels = FALSE))
     names(rf_se_perc) <- paste0(names(rf_se_perc), "_se")
+    
+    # coefficients of variation
     rf_cv <- 100*(y_mats$sd[,-c(1,2)]/y_mats$point[,-c(1,2)])
     names(rf_cv) <- paste0(names(rf_cv), "_cv")
+    
+    # lower limit of interval
+    rf_lci <- bind_cols(lapply(y_mats$point[,-c(1,2)] - 1.96*y_mats$sd[,-c(1,2)], 
+                               ggplot2::cut_number, n = 100, labels = FALSE))
+    names(rf_lci) <- paste0(names(rf_lci), "_lci")
     
     # make dataset of top areas
     temp2 <- list(
@@ -353,7 +360,7 @@ rm(tf, point, lower, upper)
         left_join(.,global_obj$census) %>% 
         cbind(.,rf_point_perc) %>%
         cbind(.,rf_se_perc) %>%
-        cbind(.,rf_cv) %>%
+        #cbind(.,rf_cv) %>% 
         slice_max(perc95, n = 4, with_ties = FALSE) %>% 
         dplyr::select("Sa2_name16", "perc95", "Ste_name16", "N_persons", "point", "ra_sa2", 
                       activityleiswkpl, alcohol, diet, overweight, smoking),
