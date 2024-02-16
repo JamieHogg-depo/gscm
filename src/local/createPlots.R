@@ -221,9 +221,10 @@ data2 <- data %>%
 
 res <- cor(data2)
 ggcorrplot::ggcorrplot(res, hc.order = TRUE,
-           outline.col = "white", lab = TRUE,
-           colors = c("#6D9EC1", "white", "#E46726"),
-           tl.cex = 8)
+                       type = "lower",
+                       outline.col = "white", lab = TRUE,
+                       colors = c("#6D9EC1", "white", "#E46726"),
+                       tl.cex = 8)
 jf$jsave(filename = paste0("cor_observed.png"),
          base_folder = "out",
          square = T,

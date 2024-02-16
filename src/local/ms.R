@@ -37,14 +37,6 @@ y_mats <- readRDS("C:/r_proj/gscm/data/y_mats.rds")
 # load global data
 global_obj <- readRDS("data/global_obj.rds")
 
-# load map
-# map_sa2 <- st_read("C:/r_proj/ACAriskfactors/data/2016_SA2_Shape_min/2016_SA2_Shape_min.shp") %>%
-#   mutate(SA2 = as.numeric(SA2_MAIN16)) %>%
-#   filter(!str_detect(SA2_NAME, "Island")) %>%
-#   filter(STATE_NAME != "Other Territories") %>%
-#   right_join(.,global_obj$area_concor, by = "SA2") %>%
-#   right_join(.,global_obj$census, by = "ps_area")
-
 # Load modelled results
 cur_date <- c("202310022")
 files <- list.files(paste0("Z:/gscm/outputs/", cur_date, "/r"), full.names = T)
@@ -65,18 +57,21 @@ W <- out_all[[1]]$data$W
 census <- out_all[[1]]$data$census
 
 # Australia outline
-aus_border <- suppressMessages(map_sa2 %>% 
-                                 summarise(geometry = st_union(geometry)) %>% 
-                                 st_as_sf() %>%
-                                 st_transform(4326))
+aus_border <- suppressMessages(st_read("C:/r_proj/ACAriskfactors/data/2016_SA2_Shape_min/2016_SA2_Shape_min.shp") %>%
+  filter(!str_detect(SA2_NAME, "Island")) %>%
+  summarise(geometry = st_union(geometry)) %>% 
+  st_as_sf() %>%
+  st_transform(4326))
 
 # State outline
-state_border <- suppressMessages(map_sa2 %>% 
-                                   group_by(Ste_name16) %>% 
-                                   summarise(geometry = st_union(geometry), .groups = "drop") %>% 
-                                   filter(!st_is_empty(.)) %>% 
-                                   st_as_sf() %>%
-                                   st_transform(4326))
+state_border <- suppressMessages(st_read("C:/r_proj/ACAriskfactors/data/2016_SA2_Shape_min/2016_SA2_Shape_min.shp") %>%
+  filter(!str_detect(SA2_NAME, "Island")) %>%
+  group_by(STATE_CODE) %>% 
+  summarise(geometry = st_union(geometry), .groups = "drop") %>% 
+  filter(!st_is_empty(.)) %>% 
+  st_as_sf() %>%
+  st_transform(4326))
+
 
 # City Insets 
 lims <- data.frame(
