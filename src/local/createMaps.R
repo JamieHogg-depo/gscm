@@ -38,14 +38,14 @@ mapping_data <- cur_list[[paste0("summ_latent", jkl)]]$raw %>%
 base <- mapping_data %>% 
   ggplot()+
   theme_void()+
+  geom_sf(data = aus_border, aes(geometry = geometry), 
+          colour = "white", fill = "grey", size = 0.2)+
   geom_sf(aes(fill = point), col = NA)+
   scale_fill_viridis_c(begin = 0, end = 1, 
                        direction = -1,
                        option = "D")+
-  geom_sf(data = aus_border, aes(geometry = geometry), 
-          colour = "black", fill = NA, size = 0.2)+
   geom_sf(data = state_border, aes(geometry = geometry), 
-          colour = "black", fill = NA, size = 0.1)+
+          colour = "white", fill = NA, size = 0.1)+
   theme(legend.position = "none",
         text = element_text(size = 8),
         plot.title = element_text(margin = margin(0,0,2,0)),
@@ -64,7 +64,7 @@ llegend <- ggpubr::get_legend(base_legend)
 base_boxes <- base
 for(i in 1:8){
   base_boxes <- base_boxes + 
-    jf$addBoxLabel(i, color = "black", size = 0.2, textsize = 1.5)
+    jf$addBoxLabel(i, color = "white", size = 0.2, textsize = 1.5)
 }
 
 # Create list of insets
@@ -74,7 +74,7 @@ for(i in 1:8){
     xlim(lims$xmin[i], lims$xmax[i]) +
     ylim(lims$ymin[i], lims$ymax[i]) +
     labs(title = lims$inset_labs[i])+
-    theme(panel.border = element_rect(colour = "black", size=1, fill=NA),
+    theme(panel.border = element_rect(colour = "white", size=1, fill=NA),
           plot.title = element_text(margin = margin(0,0,2,0),
                                     size = 5),
           plot.margin = unit(c(1,1,1,1), "mm"))
@@ -114,14 +114,14 @@ mapping_data <- cur_list[[paste0("summ_latent", jkl)]]$raww %>%
 base <- mapping_data %>% 
   ggplot()+
   theme_void()+
+  geom_sf(data = aus_border, aes(geometry = geometry), 
+          colour = "white", fill = "grey", size = 0.2)+
   geom_sf(aes(fill = cisize), col = NA)+
   scale_fill_viridis_c(begin = 0, end = 1, 
                        direction = -1,
                        option = "D")+
-  geom_sf(data = aus_border, aes(geometry = geometry), 
-          colour = "black", fill = NA, size = 0.2)+
   geom_sf(data = state_border, aes(geometry = geometry), 
-          colour = "black", fill = NA, size = 0.1)+
+          colour = "white", fill = NA, size = 0.1)+
   theme(legend.position = "none",
         text = element_text(size = 8),
         plot.title = element_text(margin = margin(0,0,2,0)),
@@ -140,7 +140,7 @@ llegend <- ggpubr::get_legend(base_legend)
 base_boxes <- base
 for(i in 1:8){
   base_boxes <- base_boxes + 
-    jf$addBoxLabel(i, color = "black", size = 0.2, textsize = 1.5)
+    jf$addBoxLabel(i, color = "white", size = 0.2, textsize = 1.5)
 }
 
 # Create list of insets
@@ -150,7 +150,7 @@ for(i in 1:8){
     xlim(lims$xmin[i], lims$xmax[i]) +
     ylim(lims$ymin[i], lims$ymax[i]) +
     labs(title = lims$inset_labs[i])+
-    theme(panel.border = element_rect(colour = "black", size=1, fill=NA),
+    theme(panel.border = element_rect(colour = "white", size=1, fill=NA),
           plot.title = element_text(margin = margin(0,0,2,0),
                                     size = 5),
           plot.margin = unit(c(1,1,1,1), "mm"))
@@ -205,14 +205,14 @@ mapping_data <- cur_list[[paste0("summ_latent", jkl)]]$rankk %>%
 base <- mapping_data %>% 
   ggplot()+
   theme_void()+
+  geom_sf(data = aus_border, aes(geometry = geometry), 
+          colour = "white", fill = "grey", size = 0.2)+
   geom_sf(aes(fill = point), col = NA)+
   scale_fill_viridis_c(begin = 0, end = 1, 
                        direction = -1,
                        option = "E")+
-  geom_sf(data = aus_border, aes(geometry = geometry), 
-          colour = "black", fill = NA, size = 0.2)+
   geom_sf(data = state_border, aes(geometry = geometry), 
-          colour = "black", fill = NA, size = 0.1)+
+          colour = "white", fill = NA, size = 0.1)+
   theme(legend.position = "none",
         text = element_text(size = 8),
         plot.title = element_text(margin = margin(0,0,2,0)),
@@ -231,7 +231,7 @@ llegend <- ggpubr::get_legend(base_legend)
 base_boxes <- base
 for(i in 1:8){
   base_boxes <- base_boxes + 
-    jf$addBoxLabel(i, color = "black", size = 0.2, textsize = 1.5)
+    jf$addBoxLabel(i, color = "white", size = 0.2, textsize = 1.5)
 }
 
 # Create list of insets
@@ -241,7 +241,7 @@ for(i in 1:8){
     xlim(lims$xmin[i], lims$xmax[i]) +
     ylim(lims$ymin[i], lims$ymax[i]) +
     labs(title = lims$inset_labs[i])+
-    theme(panel.border = element_rect(colour = "black", size=1, fill=NA),
+    theme(panel.border = element_rect(colour = "white", size=1, fill=NA),
           plot.title = element_text(margin = margin(0,0,2,0),
                                     size = 5),
           plot.margin = unit(c(1,1,1,1), "mm"))
@@ -281,14 +281,14 @@ mapping_data <- cur_list[[paste0("summ_latent", jkl)]]$rankk %>%
 base <- mapping_data %>% 
   ggplot()+
   theme_void()+
+  geom_sf(data = aus_border, aes(geometry = geometry), 
+          colour = "white", fill = "grey", size = 0.2)+
   geom_sf(aes(fill = cisize), col = NA)+
   scale_fill_viridis_c(begin = 0, end = 1, 
                        direction = -1,
                        option = "D")+
-  geom_sf(data = aus_border, aes(geometry = geometry), 
-          colour = "black", fill = NA, size = 0.2)+
   geom_sf(data = state_border, aes(geometry = geometry), 
-          colour = "black", fill = NA, size = 0.1)+
+          colour = "white", fill = NA, size = 0.1)+
   theme(legend.position = "none",
         text = element_text(size = 8),
         plot.title = element_text(margin = margin(0,0,2,0)),
@@ -307,7 +307,7 @@ llegend <- ggpubr::get_legend(base_legend)
 base_boxes <- base
 for(i in 1:8){
   base_boxes <- base_boxes + 
-    jf$addBoxLabel(i, color = "black", size = 0.2, textsize = 1.5)
+    jf$addBoxLabel(i, color = "white", size = 0.2, textsize = 1.5)
 }
 
 # Create list of insets
@@ -317,7 +317,7 @@ for(i in 1:8){
     xlim(lims$xmin[i], lims$xmax[i]) +
     ylim(lims$ymin[i], lims$ymax[i]) +
     labs(title = lims$inset_labs[i])+
-    theme(panel.border = element_rect(colour = "black", size=1, fill=NA),
+    theme(panel.border = element_rect(colour = "white", size=1, fill=NA),
           plot.title = element_text(margin = margin(0,0,2,0),
                                     size = 5),
           plot.margin = unit(c(1,1,1,1), "mm"))
@@ -372,14 +372,14 @@ mapping_data <- cur_list[[paste0("summ_latent", jkl)]]$perc %>%
 base <- mapping_data %>% 
   ggplot()+
   theme_void()+
+  geom_sf(data = aus_border, aes(geometry = geometry), 
+          colour = "white", fill = "grey", size = 0.2)+
   geom_sf(aes(fill = point), col = NA)+
   scale_fill_viridis_c(begin = 0, end = 1, 
                        direction = -1,
                        option = "F")+
-  geom_sf(data = aus_border, aes(geometry = geometry), 
-          colour = "black", fill = NA, size = 0.2)+
   geom_sf(data = state_border, aes(geometry = geometry), 
-          colour = "black", fill = NA, size = 0.1)+
+          colour = "white", fill = NA, size = 0.1)+
   theme(legend.position = "none",
         text = element_text(size = 8),
         plot.title = element_text(margin = margin(0,0,2,0)),
@@ -398,7 +398,7 @@ llegend <- ggpubr::get_legend(base_legend)
 base_boxes <- base
 for(i in 1:8){
   base_boxes <- base_boxes + 
-    jf$addBoxLabel(i, color = "black", size = 0.2, textsize = 1.5)
+    jf$addBoxLabel(i, color = "white", size = 0.2, textsize = 1.5)
 }
 
 # Create list of insets
@@ -408,7 +408,7 @@ for(i in 1:8){
     xlim(lims$xmin[i], lims$xmax[i]) +
     ylim(lims$ymin[i], lims$ymax[i]) +
     labs(title = lims$inset_labs[i])+
-    theme(panel.border = element_rect(colour = "black", size=1, fill=NA),
+    theme(panel.border = element_rect(colour = "white", size=1, fill=NA),
           plot.title = element_text(margin = margin(0,0,2,0),
                                     size = 5),
           plot.margin = unit(c(1,1,1,1), "mm"))
@@ -448,14 +448,14 @@ mapping_data <- cur_list[[paste0("summ_latent", jkl)]]$perc %>%
 base <- mapping_data %>% 
   ggplot()+
   theme_void()+
+  geom_sf(data = aus_border, aes(geometry = geometry), 
+          colour = "white", fill = "grey", size = 0.2)+
   geom_sf(aes(fill = cisize), col = NA)+
   scale_fill_viridis_c(begin = 0, end = 1, 
                        direction = -1,
                        option = "D")+
-  geom_sf(data = aus_border, aes(geometry = geometry), 
-          colour = "black", fill = NA, size = 0.2)+
   geom_sf(data = state_border, aes(geometry = geometry), 
-          colour = "black", fill = NA, size = 0.1)+
+          colour = "white", fill = NA, size = 0.1)+
   theme(legend.position = "none",
         text = element_text(size = 8),
         plot.title = element_text(margin = margin(0,0,2,0)),
@@ -474,7 +474,7 @@ llegend <- ggpubr::get_legend(base_legend)
 base_boxes <- base
 for(i in 1:8){
   base_boxes <- base_boxes + 
-    jf$addBoxLabel(i, color = "black", size = 0.2, textsize = 1.5)
+    jf$addBoxLabel(i, color = "white", size = 0.2, textsize = 1.5)
 }
 
 # Create list of insets
@@ -484,7 +484,7 @@ for(i in 1:8){
     xlim(lims$xmin[i], lims$xmax[i]) +
     ylim(lims$ymin[i], lims$ymax[i]) +
     labs(title = lims$inset_labs[i])+
-    theme(panel.border = element_rect(colour = "black", size=1, fill=NA),
+    theme(panel.border = element_rect(colour = "white", size=1, fill=NA),
           plot.title = element_text(margin = margin(0,0,2,0),
                                     size = 5),
           plot.margin = unit(c(1,1,1,1), "mm"))
@@ -539,14 +539,14 @@ mapping_data <- cur_list[[paste0("summ_latent", jkl)]]$perc_s %>%
 base <- mapping_data %>% 
   ggplot()+
   theme_void()+
+  geom_sf(data = aus_border, aes(geometry = geometry), 
+          colour = "white", fill = "grey", size = 0.2)+
   geom_sf(aes(fill = point), col = NA)+
   scale_fill_viridis_c(begin = 0, end = 1, 
                        direction = -1,
                        option = "F")+
-  geom_sf(data = aus_border, aes(geometry = geometry), 
-          colour = "black", fill = NA, size = 0.2)+
   geom_sf(data = state_border, aes(geometry = geometry), 
-          colour = "black", fill = NA, size = 0.1)+
+          colour = "white", fill = NA, size = 0.1)+
   theme(legend.position = "none",
         text = element_text(size = 8),
         plot.title = element_text(margin = margin(0,0,2,0)),
@@ -565,7 +565,7 @@ llegend <- ggpubr::get_legend(base_legend)
 base_boxes <- base
 for(i in 1:8){
   base_boxes <- base_boxes + 
-    jf$addBoxLabel(i, color = "black", size = 0.2, textsize = 1.5)
+    jf$addBoxLabel(i, color = "white", size = 0.2, textsize = 1.5)
 }
 
 # Create list of insets
@@ -575,7 +575,7 @@ for(i in 1:8){
     xlim(lims$xmin[i], lims$xmax[i]) +
     ylim(lims$ymin[i], lims$ymax[i]) +
     labs(title = lims$inset_labs[i])+
-    theme(panel.border = element_rect(colour = "black", size=1, fill=NA),
+    theme(panel.border = element_rect(colour = "white", size=1, fill=NA),
           plot.title = element_text(margin = margin(0,0,2,0),
                                     size = 5),
           plot.margin = unit(c(1,1,1,1), "mm"))
@@ -615,6 +615,8 @@ mapping_data <- map_sa2 %>%
 base <- mapping_data %>% 
   ggplot()+
   theme_void()+
+  geom_sf(data = aus_border, aes(geometry = geometry), 
+          colour = "white", fill = "grey", size = 0.2)+
   geom_sf(aes(fill = value), col = NA)+
   scale_fill_gradientn(colors = c("#008837", "#a6dba0", "white","white","white", "#c2a5cf", "#7b3294"),
                        limits = c(-0.0000001,1.0000001),
@@ -622,10 +624,8 @@ base <- mapping_data %>%
                        #trans = "logit",
                        breaks = c(0,0.2,0.25,0.5,0.75,0.8,1),
                        labels = as.character(c(0,0.2,"",0.5,"",0.8,1)))+
-  geom_sf(data = aus_border, aes(geometry = geometry), 
-          colour = "black", fill = NA, size = 0.2)+
   geom_sf(data = state_border, aes(geometry = geometry), 
-          colour = "black", fill = NA, size = 0.1)+
+          colour = "white", fill = NA, size = 0.1)+
   theme(legend.position = "none",
         text = element_text(size = 8),
         plot.title = element_text(margin = margin(0,0,2,0)),
@@ -644,7 +644,7 @@ llegend <- ggpubr::get_legend(base_legend)
 base_boxes <- base
 for(i in 1:8){
   base_boxes <- base_boxes + 
-    jf$addBoxLabel(i, color = "black", size = 0.2, textsize = 1.5)
+    jf$addBoxLabel(i, color = "white", size = 0.2, textsize = 1.5)
 }
 
 # Create list of insets
@@ -654,7 +654,7 @@ for(i in 1:8){
     xlim(lims$xmin[i], lims$xmax[i]) +
     ylim(lims$ymin[i], lims$ymax[i]) +
     labs(title = lims$inset_labs[i])+
-    theme(panel.border = element_rect(colour = "black", size=1, fill=NA),
+    theme(panel.border = element_rect(colour = "white", size=1, fill=NA),
           plot.title = element_text(margin = margin(0,0,2,0),
                                     size = 5),
           plot.margin = unit(c(1,1,1,1), "mm"))
@@ -693,15 +693,15 @@ mapping_data <- map_sa2 %>%
 base <- mapping_data %>% 
   ggplot()+
   theme_void()+
+  geom_sf(data = aus_border, aes(geometry = geometry), 
+          colour = "white", fill = "grey", size = 0.2)+
   geom_sf(aes(fill = value), col = NA)+
   scale_fill_viridis_c(begin = 0, end = 1,
                        limits = c(0.6,1),
                        direction = -1,
                        option = "A")+
-  geom_sf(data = aus_border, aes(geometry = geometry), 
-          colour = "black", fill = NA, size = 0.2)+
   geom_sf(data = state_border, aes(geometry = geometry), 
-          colour = "black", fill = NA, size = 0.1)+
+          colour = "white", fill = NA, size = 0.1)+
   theme(legend.position = "none",
         text = element_text(size = 8),
         plot.title = element_text(margin = margin(0,0,2,0)),
@@ -720,7 +720,7 @@ llegend <- ggpubr::get_legend(base_legend)
 base_boxes <- base
 for(i in 1:8){
   base_boxes <- base_boxes + 
-    jf$addBoxLabel(i, color = "black", size = 0.2, textsize = 1.5)
+    jf$addBoxLabel(i, color = "white", size = 0.2, textsize = 1.5)
 }
 
 # Create list of insets
@@ -730,7 +730,7 @@ for(i in 1:8){
     xlim(lims$xmin[i], lims$xmax[i]) +
     ylim(lims$ymin[i], lims$ymax[i]) +
     labs(title = lims$inset_labs[i])+
-    theme(panel.border = element_rect(colour = "black", size=1, fill=NA),
+    theme(panel.border = element_rect(colour = "white", size=1, fill=NA),
           plot.title = element_text(margin = margin(0,0,2,0),
                                     size = 5),
           plot.margin = unit(c(1,1,1,1), "mm"))
