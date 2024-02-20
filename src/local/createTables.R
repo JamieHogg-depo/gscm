@@ -273,7 +273,7 @@ rm(tf, point, lower, upper)
     names(rf_lci) <- paste0(names(rf_lci), "_lci")
     
     # make dataset of top areas
-    temp2 <- list(
+    full_selected <- list(
       rf_point_perc %>% 
         cbind(.,rf_se_perc) %>%
         cbind(.,rf_cv) %>%
@@ -420,9 +420,9 @@ rm(tf, point, lower, upper)
                Ste_name16 == "Western Australia" ~ "WA",
                Ste_name16 == "Victoria" ~ "VIC"
              ))
-    round(unique(temp2$total_pop_effected), -2)
+    round(unique(full_selected$total_pop_effected), -2)
     
-    temp2 %>% 
+    full_selected %>% 
       dplyr::select(Index, Sa2_name16, Ste_name16, N_persons, 
                     activityleiswkpl, alcohol, diet, overweight, smoking) %>% #,
                     #activityleiswkpl_se, alcohol_se, diet_se, overweight_se, smoking_se) %>% 
@@ -433,10 +433,41 @@ rm(tf, point, lower, upper)
              `Risky alcohol consumption` = alcohol,
              `Inadequate diet` = diet,
              `Current smoking` = smoking,
-             `Overweight/obese` = overweight) %>% view()
+             `Overweight/obese` = overweight) %>% 
       knitr::kable(., "latex", booktabs = TRUE, format.args = list(big.mark = ","))
     
     # cleanup
-    rm(temp, pr, temp2)
+    rm(temp, pr)
+
+## TOP 4 AREAS FOR EACH INDEX - standard errors ## -----------------------------
+
+# convert proportions to quantiles
+rf_se_perc <- bind_cols(lapply(y_mats$sd[,-c(1,2)], 
+                               ggplot2::cut_number, 
+                               n = 100, labels = FALSE)) %>% 
+      setNames(paste0(names(rf_se_perc), "_se")) %>% 
+      cbind(.,map_sa2)
+
+# create temporary data
+temp3 <- lapply(c("Rank Sum", "Min-Max Normalisation", 
+                  "PC1", "PC2", 
+                  "Index 1", "Index 2", 
+                  "Index 3 - combined", 
+                  "Index 4 - combined PW"), 
+                FUN = function(x){rf_se_perc %>% 
+                    filter(Sa2_name16 %in% 
+                             filter(full_selected, Index == x)$Sa2_name16) %>% 
+                    dplyr::select(1:5, Sa2_name16) %>% 
+                    mutate(Index = x)}) %>% 
+  bind_rows(.)
+
+# join to data
+left_join(full_selected[-c(7:11)], temp3, by = c("Index", "Sa2_name16")) %>% 
+  dplyr::select(1, 2, 10:14) %>% 
+  filter(Index == "Index 4 - combined PW") %>% 
+  knitr::kable(., "latex", booktabs = TRUE, format.args = list(big.mark = ","))
+
+# cleanup
+rm(temp3)
 
 ## END SCRIPT ## ---------------------------------------------------------------
