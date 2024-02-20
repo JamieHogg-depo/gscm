@@ -1,7 +1,7 @@
 # create HDCIA Product
 
 # Write data to excel in different sheets
-wb <- createWorkbook("HDCIAProduct.xlsx")
+wb <- createWorkbook("AIBIC_Product.xlsx")
 
 for(ix in 1:4){
 
@@ -50,6 +50,6 @@ for(ix in 1:4){
   writeData(wb, ix, temp)
 
 }
-saveWorkbook(wb, "HDCIAProduct.xlsx", overwrite = T)
+saveWorkbook(wb, "AIBIC_Product.xlsx", overwrite = T)
 
 ## END SCRIPT ## ---------------------------------------------------------------

@@ -6,9 +6,9 @@ This repository contains the code and modelled results described in the manuscri
 
 The input features are available in `InputFeatures.csv`. The dataset contains a 11 columns, with the first identifying the 2016 SA2s. The remaining columns are estimates and standard deviations (SD) for the five cancer risk factor estimates. 
 
-### HDCIA product
+### AIBIC product
 
-The Health Determinants for Cancer Indexes for Areas (HDCIA) product are available in `HDCIAProduct.xlsx`. This dataset contains four sheets for each of the four indices. Index 1 and 2 are provided for completeness, Index 3 is the most applicable. Each sheet contains the following columns. 
+The Area Indices of Behaviors Impacting Cancer (AIBIC) product are available in `AIBIC_Product.xlsx`. This dataset contains four sheets for each of the four indices. Index 1 and 2 are provided for completeness, Index 3 is the most applicable. Each sheet contains the following columns. 
 
 - `SA2_2016`: The 2016 9-digit SA2 codes
 - `STATE_2016`: The 2016 state names
