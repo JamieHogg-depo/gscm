@@ -440,7 +440,58 @@ rm(tf, point, lower, upper)
       knitr::kable(., "latex", booktabs = TRUE, format.args = list(big.mark = ","))
     
     # cleanup
-    rm(temp, pr)
+    rm(pr)
+    
+## TABLE 6 ## ------------------------------------------------------------------
+
+# Percentiles    
+  rf_se_perc <- bind_cols(lapply(y_mats$sd[,-c(1,2)], 
+                                 ggplot2::cut_number, 
+                                 n = 100, labels = FALSE)) %>% 
+    setNames(paste0(names(.), "_se")) %>% 
+    cbind(.,map_sa2)
+  
+  # Collapsed percentiles: point (error) --- both percentiles
+  intern2 <- left_join(full_selected[c(2,7:11)], rf_se_perc, by = c("Sa2_name16"))
+  intern3 <- as.data.frame(lapply(intern2[2:6],as.character))
+  for(i in 1:nrow(emp)){
+    for(j in 1:5){ # iterate over columns
+      # proportions
+      #emp[i,j] <- paste0(round(y_mats$point[i,2+j],2), " (", round(y_mats$sd[i,2+j],2), ")")
+      # percentages
+      intern3[i,j] <- paste0(intern2[i,j+1], " (", intern2[i,j+6], ")")
+    }
+  }
+  perc <- intern3 %>% 
+    setNames(paste0(names(.), "_perc"))
+  rm(intern2, intern3)
+  
+# Percentages - actual
+  interm1 <- as.data.frame(lapply(y_mats$point[,-c(1:2)], as.character))
+  for(i in 1:nrow(y_mats$point)){
+    for(j in 1:5){
+      # proportions
+      #emp[i,j] <- paste0(round(y_mats$point[i,2+j],2), " (", round(y_mats$sd[i,2+j],2), ")")
+      # percentages
+      interm1[i,j] <- paste0(round(100*y_mats$point[i,2+j]), " (", round(100*y_mats$sd[i,2+j],1), ")")
+    }
+  }
+  percentages <- interm1 %>% 
+    setNames(paste0(names(emp), "_percentages")) %>% 
+    cbind(.,map_sa2) %>% 
+    left_join(full_selected[c(1,2,5)], ., by = c("Sa2_name16")) %>% 
+    dplyr::select(Index,
+                  Sa2_name16,
+                  Ste_name16, 
+                  N_persons, 
+                  activityleiswkpl_percentages,
+                  alcohol_percentages, 
+                  diet_percentages, 
+                  overweight_percentages, 
+                  smoking_percentages)
+
+## JOIN tables
+  cbind(percentages, perc)
 
 ## TOP 4 AREAS FOR EACH INDEX - standard errors ## -----------------------------
 
@@ -451,11 +502,31 @@ rm(tf, point, lower, upper)
         setNames(paste0(names(rf_se_perc), "_se")) %>% 
         cbind(.,map_sa2)
     
+# Collapsed percentiles: point (error) --- both percentiles
+  comb2 <- left_join(full_selected[c(2,7:11)], rf_se_perc, by = c("Sa2_name16"))
+  emp <- as.data.frame(lapply(comb2[2:6],as.character))
+  for(i in 1:nrow(emp)){
+    for(j in 1:5){ # iterate over columns
+      # proportions
+      #emp[i,j] <- paste0(round(y_mats$point[i,2+j],2), " (", round(y_mats$sd[i,2+j],2), ")")
+      # percentages
+      emp[i,j] <- paste0(comb2[i,j+1], " (", comb2[i,j+6], ")")
+    }
+  }
+  emp %>% 
+    setNames(paste0(names(emp), "_se")) %>% 
+    cbind(.,full_selected[c(1:2)]) %>% 
+    filter(Index == "Rank Sum") %>% 
+    knitr::kable(., "latex", booktabs = TRUE, format.args = list(big.mark = ","))
+    
 # Prevalence and standard error
   emp <- as.data.frame(lapply(y_mats$point[,-c(1:2)], as.character))
   for(i in 1:nrow(y_mats$point)){
     for(j in 1:5){
-      emp[i,j] <- paste0(round(y_mats$point[i,2+j],2), " (", round(y_mats$sd[i,2+j],2), ")")
+      # proportions
+      #emp[i,j] <- paste0(round(y_mats$point[i,2+j],2), " (", round(y_mats$sd[i,2+j],2), ")")
+      # percentages
+      emp[i,j] <- paste0(round(100*y_mats$point[i,2+j]), " (", round(100*y_mats$sd[i,2+j],1), ")")
     }
   }
   rf_se_perc <- emp %>% 
@@ -479,10 +550,10 @@ temp3 <- lapply(c("Rank Sum", "Min-Max Normalisation",
 left_join(full_selected[-c(7:11)], temp3, by = c("Index", "Sa2_name16")) %>% 
   dplyr::select(1, 2, 10:14) %>% 
   #filter(Index == "Index 4 - combined PW") %>% 
-  filter(Index == "Index 4 - combined PW") %>% 
+  filter(Index == "Rank Sum") %>% 
   knitr::kable(., "latex", booktabs = TRUE, format.args = list(big.mark = ","))
 
 # cleanup
-rm(temp3)
+rm(temp3, comb2)
 
 ## END SCRIPT ## ---------------------------------------------------------------
