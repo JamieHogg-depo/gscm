@@ -1,6 +1,6 @@
 # Generalised Shared Component Model
 
-This repository contains the code and modelled results described in the manuscript "Creating area level indices of behaviours impacting cancer in Australia with a Bayesian generalised shared component model" by James Hogg, Susanna Cramb, Jessica Cameron, Peter Baade and Kerrie Mengersen.
+This repository contains the code and modelled results described in the manuscript "Creating area level indices of behaviours impacting cancer in Australia with a Bayesian generalised shared component model" by James Hogg, Susanna Cramb, Jessica Cameron, Peter Baade and Kerrie Mengersen. Preprint available on [arXiv](https://arxiv.org/abs/2403.00319). 
 
 ### Input features
 
