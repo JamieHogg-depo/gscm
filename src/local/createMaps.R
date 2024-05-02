@@ -64,7 +64,7 @@ llegend <- ggpubr::get_legend(base_legend)
 base_boxes <- base
 for(i in 1:8){
   base_boxes <- base_boxes + 
-    jf$addBoxLabel(i, color = "white", size = 0.2, textsize = 1.5)
+    jf$addBoxLabel(i, color = "white", size = 0.2)
 }
 
 # Create list of insets
@@ -91,7 +91,7 @@ full_inset_plt <- arrangeGrob(grobs = c(list(base_boxes), inset_list, list(llege
                               top = textGrob(top_label,gp=gpar(fontsize=8)))
 
 # save object
-jf$jsave(filename = paste0("map_raw", jkl, ".png"), 
+jf$jsave(filename = paste0("maps/map_raw", jkl, ".png"), 
          base_folder = "out",
          plot = full_inset_plt, square = F,
          square_size = 1200,
@@ -140,7 +140,7 @@ llegend <- ggpubr::get_legend(base_legend)
 base_boxes <- base
 for(i in 1:8){
   base_boxes <- base_boxes + 
-    jf$addBoxLabel(i, color = "white", size = 0.2, textsize = 1.5)
+    jf$addBoxLabel(i, color = "white", size = 0.2)
 }
 
 # Create list of insets
@@ -166,7 +166,7 @@ full_inset_plt <- arrangeGrob(grobs = c(list(base_boxes), inset_list, list(llege
                               layout_matrix  = lay)
 
 # save object
-jf$jsave(filename = paste0("map_raw_cisize", jkl, ".png"), 
+jf$jsave(filename = paste0("maps/map_raw_cisize", jkl, ".png"), 
          base_folder = "out",
          plot = full_inset_plt, square = F,
          square_size = 1200,
@@ -231,7 +231,7 @@ llegend <- ggpubr::get_legend(base_legend)
 base_boxes <- base
 for(i in 1:8){
   base_boxes <- base_boxes + 
-    jf$addBoxLabel(i, color = "white", size = 0.2, textsize = 1.5)
+    jf$addBoxLabel(i, color = "white", size = 0.2)
 }
 
 # Create list of insets
@@ -258,7 +258,7 @@ full_inset_plt <- arrangeGrob(grobs = c(list(base_boxes), inset_list, list(llege
                               top = textGrob(top_label,gp=gpar(fontsize=8)))
 
 # save object
-jf$jsave(filename = paste0("map_rank", jkl, ".png"), 
+jf$jsave(filename = paste0("maps/map_rank", jkl, ".png"), 
          base_folder = "out",
          plot = full_inset_plt, square = F,
          square_size = 1200,
@@ -307,7 +307,7 @@ llegend <- ggpubr::get_legend(base_legend)
 base_boxes <- base
 for(i in 1:8){
   base_boxes <- base_boxes + 
-    jf$addBoxLabel(i, color = "white", size = 0.2, textsize = 1.5)
+    jf$addBoxLabel(i, color = "white", size = 0.2)
 }
 
 # Create list of insets
@@ -333,7 +333,7 @@ full_inset_plt <- arrangeGrob(grobs = c(list(base_boxes), inset_list, list(llege
                               layout_matrix  = lay)
 
 # save object
-jf$jsave(filename = paste0("map_rank_cisize", jkl, ".png"), 
+jf$jsave(filename = paste0("maps/map_rank_cisize", jkl, ".png"), 
          base_folder = "out",
          plot = full_inset_plt, square = F,
          square_size = 1200,
@@ -398,7 +398,7 @@ llegend <- ggpubr::get_legend(base_legend)
 base_boxes <- base
 for(i in 1:8){
   base_boxes <- base_boxes + 
-    jf$addBoxLabel(i, color = "white", size = 0.2, textsize = 1.5)
+    jf$addBoxLabel(i, color = "white", size = 0.2)
 }
 
 # Create list of insets
@@ -425,7 +425,7 @@ full_inset_plt <- arrangeGrob(grobs = c(list(base_boxes), inset_list, list(llege
                               top = textGrob(top_label,gp=gpar(fontsize=8)))
 
 # save object
-jf$jsave(filename = paste0("map_perc", jkl, ".png"), 
+jf$jsave(filename = paste0("maps/map_perc", jkl, ".png"), 
          base_folder = "out",
          plot = full_inset_plt, square = F,
          square_size = 1200,
@@ -474,7 +474,7 @@ llegend <- ggpubr::get_legend(base_legend)
 base_boxes <- base
 for(i in 1:8){
   base_boxes <- base_boxes + 
-    jf$addBoxLabel(i, color = "white", size = 0.2, textsize = 1.5)
+    jf$addBoxLabel(i, color = "white", size = 0.2)
 }
 
 # Create list of insets
@@ -500,7 +500,7 @@ full_inset_plt <- arrangeGrob(grobs = c(list(base_boxes), inset_list, list(llege
                               layout_matrix  = lay)
 
 # save object
-jf$jsave(filename = paste0("map_perc_cisize", jkl, ".png"), 
+jf$jsave(filename = paste0("maps/map_perc_cisize", jkl, ".png"), 
          base_folder = "out",
          plot = full_inset_plt, square = F,
          square_size = 1200,
@@ -565,7 +565,7 @@ llegend <- ggpubr::get_legend(base_legend)
 base_boxes <- base
 for(i in 1:8){
   base_boxes <- base_boxes + 
-    jf$addBoxLabel(i, color = "white", size = 0.2, textsize = 1.5)
+    jf$addBoxLabel(i, color = "white", size = 0.2)
 }
 
 # Create list of insets
@@ -592,7 +592,7 @@ full_inset_plt <- arrangeGrob(grobs = c(list(base_boxes), inset_list, list(llege
                               top = textGrob(top_label,gp=gpar(fontsize=8)))
 
 # save object
-jf$jsave(filename = paste0("map_perc_state", jkl, ".png"), 
+jf$jsave(filename = paste0("maps/map_perc_state", jkl, ".png"), 
          base_folder = "out",
          plot = full_inset_plt, square = F,
          square_size = 1200,
@@ -644,7 +644,7 @@ llegend <- ggpubr::get_legend(base_legend)
 base_boxes <- base
 for(i in 1:8){
   base_boxes <- base_boxes + 
-    jf$addBoxLabel(i, color = "white", size = 0.2, textsize = 1.5)
+    jf$addBoxLabel(i, color = "white", size = 0.2)
 }
 
 # Create list of insets
@@ -671,7 +671,7 @@ full_inset_plt <- arrangeGrob(grobs = c(list(base_boxes), inset_list, list(llege
                               top = textGrob(top_label,gp=gpar(fontsize=8)))
 
 # save object
-jf$jsave(filename = paste0("map_ep", jkl, ".png"), 
+jf$jsave(filename = paste0("maps/map_ep", jkl, ".png"), 
       base_folder = "out",
       plot = full_inset_plt, square = F,
       square_size = 1200,
@@ -720,7 +720,7 @@ llegend <- ggpubr::get_legend(base_legend)
 base_boxes <- base
 for(i in 1:8){
   base_boxes <- base_boxes + 
-    jf$addBoxLabel(i, color = "white", size = 0.2, textsize = 1.5)
+    jf$addBoxLabel(i, color = "white", size = 0.2)
 }
 
 # Create list of insets
@@ -747,7 +747,7 @@ full_inset_plt <- arrangeGrob(grobs = c(list(base_boxes), inset_list, list(llege
                               top = textGrob(top_label,gp=gpar(fontsize=8)))
 
 # save object
-jf$jsave(filename = paste0("map_prob", jkl, ".png"), 
+jf$jsave(filename = paste0("maps/map_prob", jkl, ".png"), 
          base_folder = "out",
          plot = full_inset_plt, square = F,
          square_size = 1200,

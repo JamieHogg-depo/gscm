@@ -512,7 +512,13 @@ jf$make_numeric_decimal <- function(.data, digits = 2){
 
 ## -----------------------------------------------------------------------------
 # adds boxlabels to maps
-jf$addBoxLabel <- function(i, color = "white", size = 0.5, textsize = 3){
+jf$addBoxLabel <- function(i, color = "white", size = 0.2, textsize = 1.6){
+  
+  offset = 1
+  if(lims$initials[i] == "C"){
+    offset = 2
+  }
+  
   if(lims$position[i] == "r"){
     list(
       annotate("rect", 
@@ -520,7 +526,7 @@ jf$addBoxLabel <- function(i, color = "white", size = 0.5, textsize = 3){
                ymin = lims$ymin[i], ymax = lims$ymax[i],
                color = color, fill = NA, size = size),
       annotate("text", y = mean(c(lims$ymin[i], lims$ymax[i])), 
-               x = lims$xmax[i] + 1, label = lims$initials[i],
+               x = lims$xmax[i] + offset, label = lims$initials[i],
                size = textsize) 
     )
   } else if(lims$position[i] == "b"){
@@ -530,7 +536,7 @@ jf$addBoxLabel <- function(i, color = "white", size = 0.5, textsize = 3){
                ymin = lims$ymin[i], ymax = lims$ymax[i],
                color = color, fill = NA, size = size),
       annotate("text", x = mean(c(lims$xmin[i], lims$xmax[i])), 
-               y = lims$ymin[i] - 1, label = lims$initials[i],
+               y = lims$ymin[i] - offset, label = lims$initials[i],
                size = textsize) 
     )
   } else if(lims$position[i] == "l"){
@@ -540,7 +546,7 @@ jf$addBoxLabel <- function(i, color = "white", size = 0.5, textsize = 3){
                ymin = lims$ymin[i], ymax = lims$ymax[i],
                color = color, fill = NA, size = size),
       annotate("text", y = mean(c(lims$ymin[i], lims$ymax[i])), 
-               x = lims$xmin[i] - 1, label = lims$initials[i],
+               x = lims$xmin[i] - offset, label = lims$initials[i],
                size = textsize) 
     )
   }else{
@@ -550,7 +556,7 @@ jf$addBoxLabel <- function(i, color = "white", size = 0.5, textsize = 3){
                ymin = lims$ymin[i], ymax = lims$ymax[i],
                color = color, fill = NA, size = size),
       annotate("text", x = mean(c(lims$xmin[i], lims$xmax[i])), 
-               y = lims$ymax[i] + 1, label = lims$initials[i],
+               y = lims$ymax[i] + offset, label = lims$initials[i],
                size = textsize) 
     )
   }

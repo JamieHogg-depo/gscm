@@ -25,6 +25,7 @@ load_presaved <- TRUE
 if(load_presaved){
 #save(list = ls(), file = "data/presaved.Rdata")
 load(file = "data/presaved.Rdata")
+source("src/local/funs.R")
 }else{
 ##
 
