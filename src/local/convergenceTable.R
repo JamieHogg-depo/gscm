@@ -16,7 +16,13 @@ cur_list$summ %>%
 
 ## create plots for sensitivity analysis ## ------------------------------------
 
-# define function
+## ---- Setup ---- ##
+
+# empty environment 
+rm(list = ls())
+
+# load and define functions
+source("src/local/funs.R")
 createSensitivityPlot <- function(y_id, y_lab,
                                   x_id, x_lab, 
                                   which_factor = 1){
@@ -37,7 +43,16 @@ cbind(out_all[[y_id]][[paste0("summ_latent",which_factor)]]$raww %>% setNames(pa
 
 }
 
-# create plots
+# Load modelled results
+cur_date <- c("202405031")
+files <- list.files(paste0("Z:/gscm/outputs/", cur_date, "/r"), full.names = T)
+files_fl <- files[!str_detect(files, "_f.rds|_fitonly.rds|_tr.rds|_ld.rds")]
+out_all <- lapply(files_fl, readRDS)
+names(out_all) <- files_fl
+
+## ---- Create plots ---- ##
+
+# Plot 1
 createSensitivityPlot(3,"Gamma", 5, "Gamma", 2)
 
 jf$jsave(filename = "sensitivity_Gamma12.png",
@@ -46,7 +61,7 @@ jf$jsave(filename = "sensitivity_Gamma12.png",
          square_size = 1200,
          dpi = 300)
 
-# create plots
+# Plot 2
 createSensitivityPlot(3,"Gamma", 5, "Gamma", 2)
 
 jf$jsave(filename = "sensitivity_Gamma12.png",
