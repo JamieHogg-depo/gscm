@@ -37,8 +37,8 @@ cbind(out_all[[y_id]][[paste0("summ_latent",which_factor)]]$raww %>% setNames(pa
   geom_point()+
   geom_abline(col = "blue")+
   labs(y = y_lab,
-       x = x_lab,
-       title = paste0("Posterior distribution of shared factor ", which_factor))+
+       x = x_lab) + #,
+       #title = paste0("Posterior distribution of shared factor ", which_factor))+
   theme(text = element_text(size = 8))
 
 }
@@ -49,22 +49,92 @@ files <- list.files(paste0("Z:/gscm/outputs/", cur_date, "/r"), full.names = T)
 files_fl <- files[!str_detect(files, "_f.rds|_fitonly.rds|_tr.rds|_ld.rds")]
 out_all <- lapply(files_fl, readRDS)
 names(out_all) <- files_fl
+grid <- bind_rows(lapply(1:length(out_all), FUN = function(x)out_all[[x]]$cur_model_spec), .id = "ix")
 
 ## ---- Create plots ---- ##
 
-# Plot 1
-createSensitivityPlot(3,"Gamma", 5, "Gamma", 2)
+grid %>% 
+  dplyr::select(ix, gamma_var_prior, beta_sa_prior, gamma_a, gamma_b)
 
-jf$jsave(filename = "sensitivity_Gamma12.png",
+# Latent 1
+
+# Plot 1
+createSensitivityPlot(1,"Tau ~ Gamma(2,3)", 
+                      5, "Tau ~ Gamma(5,5)", 1)
+
+jf$jsave(filename = "sensitivity/sensitivity_latent1_1.png",
          base_folder = "out",
          square = T,
          square_size = 1200,
          dpi = 300)
 
 # Plot 2
-createSensitivityPlot(3,"Gamma", 5, "Gamma", 2)
+createSensitivityPlot(1,"Tau ~ Gamma(2,3)", 
+                      4, "Tau ~ Gamma(1.5,1.5)", 1)
 
-jf$jsave(filename = "sensitivity_Gamma12.png",
+jf$jsave(filename = "sensitivity/sensitivity_latent1_2.png",
+         base_folder = "out",
+         square = T,
+         square_size = 1200,
+         dpi = 300)
+
+# Plot 3
+createSensitivityPlot(1,"Tau ~ Gamma(2,3)", 
+                      9, "Tau ~ Half-Standard Normal", 1)
+
+jf$jsave(filename = "sensitivity/sensitivity_latent1_3.png",
+         base_folder = "out",
+         square = T,
+         square_size = 1200,
+         dpi = 300)
+
+# Plot 4
+createSensitivityPlot(1,"Rho ~ Beta(6,2)", 
+                      8, "Rho ~ Uniform(0,1)", 1)
+
+jf$jsave(filename = "sensitivity/sensitivity_latent1_4.png",
+         base_folder = "out",
+         square = T,
+         square_size = 1200,
+         dpi = 300)
+
+# Latent 2
+
+# Plot 1
+createSensitivityPlot(1,"Tau ~ Gamma(2,3)", 
+                      5, "Tau ~ Gamma(5,5)", 2)
+
+jf$jsave(filename = "sensitivity/sensitivity_latent2_1.png",
+         base_folder = "out",
+         square = T,
+         square_size = 1200,
+         dpi = 300)
+
+# Plot 2
+createSensitivityPlot(1,"Tau ~ Gamma(2,3)", 
+                      4, "Tau ~ Gamma(1.5,1.5)", 2)
+
+jf$jsave(filename = "sensitivity/sensitivity_latent2_2.png",
+         base_folder = "out",
+         square = T,
+         square_size = 1200,
+         dpi = 300)
+
+# Plot 3
+createSensitivityPlot(1,"Tau ~ Gamma(2,3)", 
+                      9, "Tau ~ Half-Standard Normal", 2)
+
+jf$jsave(filename = "sensitivity/sensitivity_latent2_3.png",
+         base_folder = "out",
+         square = T,
+         square_size = 1200,
+         dpi = 300)
+
+# Plot 4
+createSensitivityPlot(1,"Rho ~ Beta(6,2)", 
+                      8, "Rho ~ Uniform(0,1)", 2)
+
+jf$jsave(filename = "sensitivity/sensitivity_latent2_4.png",
          base_folder = "out",
          square = T,
          square_size = 1200,
